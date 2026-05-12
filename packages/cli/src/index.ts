@@ -302,7 +302,9 @@ async function rewriteScope(
     };
     for (const key of ['dependencies', 'devDependencies'] as const) {
       const block = pkg[key];
-      if (!block) {continue;}
+      if (!block) {
+        continue;
+      }
       const next: Record<string, string> = {};
       for (const [depName, depVersion] of Object.entries(block)) {
         if (depName.startsWith(`${PLACEHOLDER_SCOPE}/`)) {
@@ -328,7 +330,9 @@ async function rewriteScope(
   const sourceFiles = await collectSourceFiles(target);
   for (const file of sourceFiles) {
     const content = await fs.readFile(file, 'utf8');
-    if (!content.includes(PLACEHOLDER_SCOPE)) {continue;}
+    if (!content.includes(PLACEHOLDER_SCOPE)) {
+      continue;
+    }
     const replaced = content.replaceAll(PLACEHOLDER_SCOPE, newScope);
     await fs.writeFile(file, replaced, 'utf8');
   }
@@ -340,7 +344,9 @@ async function collectSourceFiles(dir: string): Promise<string[]> {
   async function walk(d: string): Promise<void> {
     const entries = await fs.readdir(d, { withFileTypes: true });
     for (const ent of entries) {
-      if (skip.has(ent.name)) {continue;}
+      if (skip.has(ent.name)) {
+        continue;
+      }
       const p = path.join(d, ent.name);
       if (ent.isDirectory()) {
         await walk(p);
@@ -380,24 +386,42 @@ async function inlineToolkitInto(target: string, variant: 'rtk' | 'tanstack'): P
     }
   }
 
-  // When RTK is picked, also bundle the rsense-* skills (RTK + axios + redux
-  // patterns). For TanStack, skip — they're RTK-specific.
+  // When RTK is picked, also bundle the canonical RTK + axios + redux skills.
+  // Source skills are named rsense-<x> on disk; we strip the prefix on copy
+  // so scaffolded projects see clean names (rtk-query-api, axios-auth, …).
+  // SKILL.md `name:` frontmatter is rewritten to match.
+  // For TanStack, skip — these describe the RTK/dispatch pattern.
   if (variant === 'rtk' && (await fs.pathExists(RSENSE_SKILLS_DIR))) {
     const skillsDst = path.join(claudeDir, 'skills');
     await fs.ensureDir(skillsDst);
     const skillDirs = await fs.readdir(RSENSE_SKILLS_DIR, { withFileTypes: true });
     let copied = 0;
     for (const entry of skillDirs) {
-      if (!entry.isDirectory()) {continue;}
-      if (!entry.name.startsWith('rsense-')) {continue;}
+      if (!entry.isDirectory()) {
+        continue;
+      }
+      if (!entry.name.startsWith('rsense-')) {
+        continue;
+      }
+      const cleanName = entry.name.replace(/^rsense-/, '');
       const src = path.join(RSENSE_SKILLS_DIR, entry.name);
-      const dst = path.join(skillsDst, entry.name);
+      const dst = path.join(skillsDst, cleanName);
       await fs.copy(src, dst, { overwrite: true });
+
+      // Rewrite `name: rsense-<x>` → `name: <x>` in the SKILL.md frontmatter
+      const skillMd = path.join(dst, 'SKILL.md');
+      if (await fs.pathExists(skillMd)) {
+        const content = await fs.readFile(skillMd, 'utf8');
+        const replaced = content.replace(/^name:\s*rsense-/m, 'name: ');
+        if (replaced !== content) {
+          await fs.writeFile(skillMd, replaced, 'utf8');
+        }
+      }
       copied++;
     }
     if (copied > 0) {
       // eslint-disable-next-line no-console
-      console.error(pc.dim(`  + ${copied} rsense-* skills bundled for RTK variant`));
+      console.error(pc.dim(`  + ${copied} RTK-pattern skills bundled`));
     }
   }
 

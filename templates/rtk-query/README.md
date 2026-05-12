@@ -72,19 +72,19 @@ export default fooApi;
 
 Register the API in `src/redux/rootReducer.ts` (reducer) and `src/redux/store.ts` (middleware).
 
-## Bundled rsense skills (when this variant is picked)
+## Bundled skills (when this variant is picked)
 
-The CLI also copies `~/.claude/skills/rsense-*` into the scaffolded project's `.claude/skills/`:
+The CLI also copies the canonical RTK pattern skills into the scaffolded project's `.claude/skills/`:
 
-- `rsense-rtk-query-api`
-- `rsense-axios-auth`
-- `rsense-redux-store-integration`
-- `rsense-feature-module`
-- `rsense-container-component`
-- `rsense-routing-auth-guards`
-- `rsense-constants-organization`
-- `rsense-utils-pattern`
-- `rsense-theming-ui-wrappers`
-- `rsense-hoc-layout`
+- `rtk-query-api`
+- `axios-auth`
+- `redux-store-integration`
+- `feature-module`
+- `container-component`
+- `routing-auth-guards`
+- `constants-organization`
+- `utils-pattern`
+- `theming-ui-wrappers`
+- `hoc-layout`
 
 Use `/bfsi-feature MyFeature` (provided by the inlined toolkit) — it'll generate RTK-style scaffolding aligned with these skills.
