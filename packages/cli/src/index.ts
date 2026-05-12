@@ -36,22 +36,6 @@ const TOOLKIT_ROOT = path.join(STARTER_ROOT, 'packages', 'claude-toolkit');
 // @<projectName> at scaffold time so every project has its own scope.
 const PLACEHOLDER_SCOPE = '@your-real-scope';
 
-// User's Claude Code skills directory. The CLI sources a curated list of
-// RTK-pattern skills from here and copies them into the scaffolded project
-// when RTK Query is picked.
-const CLAUDE_SKILLS_DIR = path.join(process.env.HOME ?? '/root', '.claude', 'skills');
-
-// Curated map of source skill directory names → target name once copied into
-// the scaffolded project's .claude/skills/. The prefix on the source is an
-// artefact of where the skills currently live on disk; we drop it on copy so
-// the scaffolded project sees clean names.
-const RTK_BUNDLED_SKILLS: ReadonlyArray<{ source: string; target: string }> = [
-  { source: 'rsense-axios-auth', target: 'axios-auth' },
-  { source: 'rsense-constants-organization', target: 'constants-organization' },
-  { source: 'rsense-redux-store-integration', target: 'redux-store-integration' },
-  { source: 'rsense-rtk-query-api', target: 'rtk-query-api' },
-];
-
 interface ScaffoldOptions {
   projectName: string;
   variant: 'rtk' | 'tanstack';
@@ -192,10 +176,12 @@ async function scaffold(opts: ScaffoldOptions): Promise<void> {
   //    package.json AND every source file (imports, tailwind config, etc.).
   await rewriteScope(target, opts.projectName, opts.localLink);
 
-  // 6. Inline the toolkit into .claude/, plus curated RTK skills if variant=rtk
+  // 6. Inline the toolkit (skills, agents, commands, hooks) into .claude/.
+  //    Variant-specific RTK skills are shipped in templates/rtk-query/.claude/
+  //    so they're already in place from step 2 — nothing extra to copy here.
   if (opts.inlineToolkit) {
     s.start('Inlining Claude toolkit into .claude/');
-    await inlineToolkitInto(target, opts.variant);
+    await inlineToolkitInto(target);
     s.stop('Claude toolkit inlined into .claude/');
   }
 
@@ -376,54 +362,29 @@ async function collectSourceFiles(dir: string): Promise<string[]> {
 /**
  * Inline the Claude toolkit into <project>/.claude/.
  *
- * - Copies skills/, agents/, commands/ as-is (Claude Code recognises these at project scope)
- * - When variant is `rtk`, ALSO copies a curated set of RTK-pattern skills from
- *   ~/.claude/skills/ into .claude/skills/. The whitelist is RTK_BUNDLED_SKILLS.
- *   Source dir name → target dir name (rewriting the SKILL.md `name:` frontmatter to match).
- *   Skipped for TanStack — these skills describe the RTK/dispatch pattern.
+ * - Copies the toolkit's skills/, agents/, commands/ into the project (these
+ *   are the shared bfsi-* skills that ship in every project)
  * - Copies hooks/scripts/ and rewrites paths in hooks.json from `${CLAUDE_PLUGIN_ROOT}/...`
  *   to `${CLAUDE_PROJECT_DIR}/.claude/...` since we're now project-local, not a plugin
  * - Merges hooks into existing `.claude/settings.json` (which already has permissions)
  * - Removes `enabledPlugins` from settings since the plugin is now inlined
+ *
+ * Variant-specific skills (e.g. RTK pattern skills under templates/rtk-query/
+ * .claude/skills/) are NOT handled here — they ship inside their variant
+ * overlay and land in the project as part of the standard overlay copy.
  */
-async function inlineToolkitInto(target: string, variant: 'rtk' | 'tanstack'): Promise<void> {
+async function inlineToolkitInto(target: string): Promise<void> {
   const claudeDir = path.join(target, '.claude');
   await fs.ensureDir(claudeDir);
 
-  // Copy skills, agents, commands directly
+  // Copy the toolkit's skills, agents, commands. Existing files at the same
+  // path (e.g. variant-shipped RTK skills already placed by the overlay) are
+  // preserved because we don't write over names we don't have.
   for (const sub of ['skills', 'agents', 'commands']) {
     const src = path.join(TOOLKIT_ROOT, sub);
     const dst = path.join(claudeDir, sub);
     if (await fs.pathExists(src)) {
       await fs.copy(src, dst, { overwrite: true });
-    }
-  }
-
-  // For RTK, bundle the curated RTK-pattern skills.
-  if (variant === 'rtk' && (await fs.pathExists(CLAUDE_SKILLS_DIR))) {
-    const skillsDst = path.join(claudeDir, 'skills');
-    await fs.ensureDir(skillsDst);
-    let copied = 0;
-    for (const { source, target: cleanName } of RTK_BUNDLED_SKILLS) {
-      const src = path.join(CLAUDE_SKILLS_DIR, source);
-      if (!(await fs.pathExists(src))) {continue;}
-      const dst = path.join(skillsDst, cleanName);
-      await fs.copy(src, dst, { overwrite: true });
-
-      // Rewrite the SKILL.md `name:` frontmatter to the cleaned target name
-      const skillMd = path.join(dst, 'SKILL.md');
-      if (await fs.pathExists(skillMd)) {
-        const content = await fs.readFile(skillMd, 'utf8');
-        const replaced = content.replace(/^name:\s*.+$/m, `name: ${cleanName}`);
-        if (replaced !== content) {
-          await fs.writeFile(skillMd, replaced, 'utf8');
-        }
-      }
-      copied++;
-    }
-    if (copied > 0) {
-      // eslint-disable-next-line no-console
-      console.error(pc.dim(`  + ${copied} RTK-pattern skills bundled`));
     }
   }
 
