@@ -41,8 +41,7 @@ export class ApiError extends Error {
     this.ref = opts.ref;
     this.fieldErrors = opts.fieldErrors;
     if (opts.cause !== undefined) {
-      // @ts-expect-error — `cause` exists in modern lib
-      this.cause = opts.cause;
+      (this as Error).cause = opts.cause;
     }
   }
 
@@ -61,12 +60,12 @@ export class ApiError extends Error {
 }
 
 export function fromStatus(status: number): ApiErrorKind {
-  if (status === 401) return 'unauthorized';
-  if (status === 403) return 'forbidden';
-  if (status === 404) return 'not_found';
-  if (status === 409) return 'conflict';
-  if (status === 422) return 'validation';
-  if (status === 429) return 'rate_limited';
-  if (status >= 500 && status < 600) return 'server_error';
+  if (status === 401) {return 'unauthorized';}
+  if (status === 403) {return 'forbidden';}
+  if (status === 404) {return 'not_found';}
+  if (status === 409) {return 'conflict';}
+  if (status === 422) {return 'validation';}
+  if (status === 429) {return 'rate_limited';}
+  if (status >= 500 && status < 600) {return 'server_error';}
   return 'unknown';
 }

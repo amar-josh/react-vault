@@ -1,30 +1,14 @@
 /**
  * Composable axios interceptors. Each function takes an instance and attaches
  * itself. App code chooses which to add.
+ *
+ * Note: auth-header injection is NOT here. Tokens are set once on the instance
+ * via setAuthToken() in createAxios.ts (rsense-style, set-at-login). Avoids
+ * reading from localStorage on every request.
  */
 import type { AxiosInstance, InternalAxiosRequestConfig } from 'axios';
 import { ApiError, fromStatus } from './errors.js';
 import { generateEventId } from '../audit/auditClient.js';
-
-/**
- * Request interceptor: inject auth token via the provided getter.
- * Getter returns the current token (or null). It's called fresh each request
- * so refresh-on-the-fly works.
- */
-export function attachAuthHeader(
-  instance: AxiosInstance,
-  opts: { getToken: () => string | null; headerName?: string },
-): void {
-  const headerName = opts.headerName ?? 'Authorization';
-  instance.interceptors.request.use((config: InternalAxiosRequestConfig) => {
-    const token = opts.getToken();
-    if (token) {
-      const value = headerName === 'Authorization' ? `Bearer ${token}` : token;
-      config.headers.set(headerName, value);
-    }
-    return config;
-  });
-}
 
 /**
  * Request interceptor: add a correlation ID and idempotency key.
@@ -86,10 +70,14 @@ export function attachErrorMapping(
 }
 
 function mapError(err: unknown): ApiError {
-  if (err instanceof ApiError) return err;
+  if (err instanceof ApiError) {return err;}
   // We don't import AxiosError type directly because we don't want a hard runtime dep
   // on axios internals — duck-type instead.
-  const e = err as { response?: { status?: number; data?: unknown }; code?: string; message?: string };
+  const e = err as {
+    response?: { status?: number; data?: unknown };
+    code?: string;
+    message?: string;
+  };
 
   if (e?.code === 'ECONNABORTED' || e?.code === 'ERR_CANCELED') {
     return new ApiError('Request cancelled', { kind: 'cancelled', cause: err });
@@ -99,7 +87,14 @@ function mapError(err: unknown): ApiError {
   }
   const status = e.response.status ?? 0;
   const kind = fromStatus(status);
-  const data = e.response.data as { ref?: string; field_errors?: Record<string, string>; errors?: Record<string, string>; message?: string } | undefined;
+  const data = e.response.data as
+    | {
+        ref?: string;
+        field_errors?: Record<string, string>;
+        errors?: Record<string, string>;
+        message?: string;
+      }
+    | undefined;
 
   return new ApiError(data?.message ?? `HTTP ${status}`, {
     kind,
@@ -121,7 +116,7 @@ function snakeToCamelKey(key: string): string {
 }
 
 function deepSnakeToCamel(value: unknown): unknown {
-  if (Array.isArray(value)) return value.map(deepSnakeToCamel);
+  if (Array.isArray(value)) {return value.map(deepSnakeToCamel);}
   if (value && typeof value === 'object' && !(value instanceof Date)) {
     const out: Record<string, unknown> = {};
     for (const [k, v] of Object.entries(value)) {
@@ -133,8 +128,13 @@ function deepSnakeToCamel(value: unknown): unknown {
 }
 
 function deepCamelToSnake(value: unknown): unknown {
-  if (Array.isArray(value)) return value.map(deepCamelToSnake);
-  if (value && typeof value === 'object' && !(value instanceof Date) && !(value instanceof FormData)) {
+  if (Array.isArray(value)) {return value.map(deepCamelToSnake);}
+  if (
+    value &&
+    typeof value === 'object' &&
+    !(value instanceof Date) &&
+    !(value instanceof FormData)
+  ) {
     const out: Record<string, unknown> = {};
     for (const [k, v] of Object.entries(value)) {
       out[camelToSnakeKey(k)] = deepCamelToSnake(v);

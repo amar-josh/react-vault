@@ -1,10 +1,14 @@
 /**
  * Configurable axios factory. Apps create one (or more) instances by
  * composing the interceptors they need.
+ *
+ * Auth model: tokens are set ONCE on the instance via {@link setAuthToken} at
+ * login time, not injected per-request. This is the rsense-react-org pattern
+ * — cheaper than reading from localStorage on every call. Call {@link clearAuthToken}
+ * on logout / 401.
  */
 import axios, { type AxiosInstance } from 'axios';
 import {
-  attachAuthHeader,
   attachCamelToSnake,
   attachErrorMapping,
   attachRequestIds,
@@ -14,9 +18,7 @@ import {
 export interface CreateAxiosOptions {
   baseURL: string;
   timeoutMs?: number;
-  /** Provide a function that returns the current auth token. */
-  getToken?: () => string | null;
-  /** Header name for the token. Default `Authorization` (sends `Bearer <token>`). */
+  /** Header name for the auth token. Default `Authorization` (sends `Bearer <token>`). */
   authHeaderName?: string;
   /** Callback for 401 responses (typically: clear auth + redirect to login). */
   onUnauthorized?: () => void;
@@ -39,12 +41,9 @@ export function createAxios(opts: CreateAxiosOptions): AxiosInstance {
     },
   });
 
-  if (opts.getToken) {
-    attachAuthHeader(instance, {
-      getToken: opts.getToken,
-      headerName: opts.authHeaderName,
-    });
-  }
+  // Stash the auth header name on the instance for set/clear helpers.
+  (instance as AxiosInstance & { __authHeaderName?: string }).__authHeaderName =
+    opts.authHeaderName ?? 'Authorization';
 
   if (!opts.disableRequestIds) {
     attachRequestIds(instance);
@@ -56,8 +55,34 @@ export function createAxios(opts: CreateAxiosOptions): AxiosInstance {
   }
 
   attachErrorMapping(instance, {
-    onUnauthorized: opts.onUnauthorized,
+    onUnauthorized: () => {
+      clearAuthToken(instance);
+      opts.onUnauthorized?.();
+    },
   });
 
   return instance;
+}
+
+/**
+ * Set the auth token on an axios instance — call once at login.
+ *
+ * If the header name is `Authorization`, the value is automatically prefixed
+ * with `Bearer `. For any other header name (e.g. `X-Auth-Token`), the value
+ * is set verbatim.
+ */
+export function setAuthToken(instance: AxiosInstance, token: string): void {
+  const headerName =
+    (instance as AxiosInstance & { __authHeaderName?: string }).__authHeaderName ?? 'Authorization';
+  const value = headerName === 'Authorization' ? `Bearer ${token}` : token;
+  instance.defaults.headers.common[headerName] = value;
+}
+
+/**
+ * Remove the auth token from an axios instance — call on logout / 401.
+ */
+export function clearAuthToken(instance: AxiosInstance): void {
+  const headerName =
+    (instance as AxiosInstance & { __authHeaderName?: string }).__authHeaderName ?? 'Authorization';
+  delete instance.defaults.headers.common[headerName];
 }

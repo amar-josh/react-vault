@@ -32,6 +32,14 @@ const STARTER_ROOT = path.resolve(__dirname, '..', '..', '..');
 const TEMPLATES_ROOT = path.join(STARTER_ROOT, 'templates');
 const TOOLKIT_ROOT = path.join(STARTER_ROOT, 'packages', 'claude-toolkit');
 
+// Placeholder scope baked into the template source files. Gets replaced with
+// @<projectName> at scaffold time so every project has its own scope.
+const PLACEHOLDER_SCOPE = '@your-real-scope';
+
+// Where rsense-* skills live on this machine. Bundled into the scaffolded
+// project's .claude/skills/ when RTK Query is picked.
+const RSENSE_SKILLS_DIR = path.join(process.env.HOME ?? '/root', '.claude', 'skills');
+
 interface ScaffoldOptions {
   projectName: string;
   variant: 'rtk' | 'tanstack';
@@ -94,8 +102,7 @@ export async function main(): Promise<void> {
   }
 
   const localLink = (await confirm({
-    message:
-      'Use link: refs for @your-real-scope/core and @your-real-scope/ui? (needed until packages are published)',
+    message: `Use link: refs for @${projectName as string}/core and @${projectName as string}/ui? (needed until packages are published)`,
     initialValue: true,
   })) as boolean;
   if (isCancel(localLink)) {
@@ -168,22 +175,15 @@ async function scaffold(opts: ScaffoldOptions): Promise<void> {
   // 4. Substitute {{projectName}} in package.json, README.md, index.html, i18n
   await substituteVars(target, opts.projectName);
 
-  // 5. Rewrite @your-real-scope/* deps to link: paths if local-link is on
-  if (opts.localLink) {
-    await rewriteToLinkDeps(target);
-  } else {
-    s.start('Skipping link rewrite');
-    s.stop(
-      pc.yellow(
-        'Note: pnpm install will fail until @your-real-scope/core and @your-real-scope/ui are published. Use --local-link or edit deps manually.',
-      ),
-    );
-  }
+  // 5. Rewrite scope from @your-real-scope to @<projectName>, and link: refs
+  //    for core/ui packages if local-link is on. Replaces the placeholder in
+  //    package.json AND every source file (imports, tailwind config, etc.).
+  await rewriteScope(target, opts.projectName, opts.localLink);
 
-  // 6. Inline the toolkit into .claude/
+  // 6. Inline the toolkit into .claude/, plus rsense-* skills if RTK
   if (opts.inlineToolkit) {
     s.start('Inlining Claude toolkit into .claude/');
-    await inlineToolkitInto(target);
+    await inlineToolkitInto(target, opts.variant);
     s.stop('Claude toolkit inlined into .claude/');
   }
 
@@ -212,7 +212,7 @@ async function scaffold(opts: ScaffoldOptions): Promise<void> {
       await execa('git', ['add', '.'], { cwd: target });
       await execa(
         'git',
-        ['commit', '-q', '-m', 'chore: scaffolded from @your-real-scope/create-app'],
+        ['commit', '-q', '-m', `chore: scaffold ${opts.projectName} from create-app`],
         {
           cwd: target,
         },
@@ -273,38 +273,101 @@ async function substituteVars(target: string, projectName: string): Promise<void
   }
 }
 
-async function rewriteToLinkDeps(target: string): Promise<void> {
-  const pkgPath = path.join(target, 'package.json');
-  if (!(await fs.pathExists(pkgPath))) {
-    return;
-  }
-  const pkg = (await fs.readJSON(pkgPath)) as {
-    dependencies?: Record<string, string>;
-  };
-  if (!pkg.dependencies) {
-    return;
-  }
+/**
+ * Renames every @your-real-scope reference to @<projectName>:
+ *   - package.json dependency keys (preserves version, then rewrites version
+ *     to a `link:` path if localLink is true)
+ *   - tailwind.config.ts `content` glob (./node_modules/@scope/ui/...)
+ *   - All source files (.ts, .tsx, .js, .jsx, .json, .md) — imports + comments
+ *
+ * After this runs, the scaffolded project consistently uses @<projectName>/core
+ * and @<projectName>/ui everywhere. With localLink on, pnpm install will
+ * resolve those names to the local workspace via symlink.
+ */
+async function rewriteScope(
+  target: string,
+  projectName: string,
+  localLink: boolean,
+): Promise<void> {
+  const newScope = `@${projectName}`;
   const corePath = path.join(STARTER_ROOT, 'packages', 'core');
   const uiPath = path.join(STARTER_ROOT, 'packages', 'ui');
-  if (pkg.dependencies['@your-real-scope/core']) {
-    pkg.dependencies['@your-real-scope/core'] = `link:${corePath}`;
+
+  // 1. Rewrite package.json deps: rename key + optionally swap to link:
+  const pkgPath = path.join(target, 'package.json');
+  if (await fs.pathExists(pkgPath)) {
+    const pkg = (await fs.readJSON(pkgPath)) as {
+      dependencies?: Record<string, string>;
+      devDependencies?: Record<string, string>;
+    };
+    for (const key of ['dependencies', 'devDependencies'] as const) {
+      const block = pkg[key];
+      if (!block) {continue;}
+      const next: Record<string, string> = {};
+      for (const [depName, depVersion] of Object.entries(block)) {
+        if (depName.startsWith(`${PLACEHOLDER_SCOPE}/`)) {
+          const subname = depName.slice(PLACEHOLDER_SCOPE.length); // e.g. /core
+          const newName = `${newScope}${subname}`;
+          if (localLink && subname === '/core') {
+            next[newName] = `link:${corePath}`;
+          } else if (localLink && subname === '/ui') {
+            next[newName] = `link:${uiPath}`;
+          } else {
+            next[newName] = depVersion;
+          }
+        } else {
+          next[depName] = depVersion;
+        }
+      }
+      pkg[key] = next;
+    }
+    await fs.writeJSON(pkgPath, pkg, { spaces: 2 });
   }
-  if (pkg.dependencies['@your-real-scope/ui']) {
-    pkg.dependencies['@your-real-scope/ui'] = `link:${uiPath}`;
+
+  // 2. Rewrite the placeholder scope in every source file
+  const sourceFiles = await collectSourceFiles(target);
+  for (const file of sourceFiles) {
+    const content = await fs.readFile(file, 'utf8');
+    if (!content.includes(PLACEHOLDER_SCOPE)) {continue;}
+    const replaced = content.replaceAll(PLACEHOLDER_SCOPE, newScope);
+    await fs.writeFile(file, replaced, 'utf8');
   }
-  await fs.writeJSON(pkgPath, pkg, { spaces: 2 });
+}
+
+async function collectSourceFiles(dir: string): Promise<string[]> {
+  const out: string[] = [];
+  const skip = new Set(['node_modules', '.git', 'dist', '.turbo', 'build']);
+  async function walk(d: string): Promise<void> {
+    const entries = await fs.readdir(d, { withFileTypes: true });
+    for (const ent of entries) {
+      if (skip.has(ent.name)) {continue;}
+      const p = path.join(d, ent.name);
+      if (ent.isDirectory()) {
+        await walk(p);
+        continue;
+      }
+      if (/\.(ts|tsx|js|jsx|json|md|html|css|cjs|mjs|yaml|yml)$/.test(ent.name)) {
+        out.push(p);
+      }
+    }
+  }
+  await walk(dir);
+  return out;
 }
 
 /**
  * Inline the Claude toolkit into <project>/.claude/.
  *
  * - Copies skills/, agents/, commands/ as-is (Claude Code recognises these at project scope)
+ * - When variant is `rtk`, ALSO copies ~/.claude/skills/rsense-* into .claude/skills/
+ *   so the project has the canonical rsense RTK-Query + axios + redux skills available.
+ *   (No rsense skills are copied for TanStack — they're RTK-specific.)
  * - Copies hooks/scripts/ and rewrites paths in hooks.json from `${CLAUDE_PLUGIN_ROOT}/...`
  *   to `${CLAUDE_PROJECT_DIR}/.claude/...` since we're now project-local, not a plugin
  * - Merges hooks into existing `.claude/settings.json` (which already has permissions)
  * - Removes `enabledPlugins` from settings since the plugin is now inlined
  */
-async function inlineToolkitInto(target: string): Promise<void> {
+async function inlineToolkitInto(target: string, variant: 'rtk' | 'tanstack'): Promise<void> {
   const claudeDir = path.join(target, '.claude');
   await fs.ensureDir(claudeDir);
 
@@ -314,6 +377,27 @@ async function inlineToolkitInto(target: string): Promise<void> {
     const dst = path.join(claudeDir, sub);
     if (await fs.pathExists(src)) {
       await fs.copy(src, dst, { overwrite: true });
+    }
+  }
+
+  // When RTK is picked, also bundle the rsense-* skills (RTK + axios + redux
+  // patterns). For TanStack, skip — they're RTK-specific.
+  if (variant === 'rtk' && (await fs.pathExists(RSENSE_SKILLS_DIR))) {
+    const skillsDst = path.join(claudeDir, 'skills');
+    await fs.ensureDir(skillsDst);
+    const skillDirs = await fs.readdir(RSENSE_SKILLS_DIR, { withFileTypes: true });
+    let copied = 0;
+    for (const entry of skillDirs) {
+      if (!entry.isDirectory()) {continue;}
+      if (!entry.name.startsWith('rsense-')) {continue;}
+      const src = path.join(RSENSE_SKILLS_DIR, entry.name);
+      const dst = path.join(skillsDst, entry.name);
+      await fs.copy(src, dst, { overwrite: true });
+      copied++;
+    }
+    if (copied > 0) {
+      // eslint-disable-next-line no-console
+      console.error(pc.dim(`  + ${copied} rsense-* skills bundled for RTK variant`));
     }
   }
 

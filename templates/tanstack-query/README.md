@@ -2,54 +2,62 @@
 
 Overlay applied on top of `templates/_shared/` when the user picks **TanStack Query**.
 
-## What this overlay adds
+## Adds
 
-- `@tanstack/react-query` + `@tanstack/react-query-devtools` + `zustand` dependencies
-- `src/api/queryClient.ts` — pre-configured `QueryClient` with BFSI-friendly defaults
-- `src/api/httpClient.ts` — axios instance from `@your-real-scope/core/http`
+- `@tanstack/react-query` + devtools + `zustand` deps
+- `src/api/axiosInstance.ts` — single shared axios instance from `@<projectName>/core/http`
+- `src/api/http.ts` — typed `GET<TRes, TParams>`, `POST<TRes, TReq>`, `PUT`, `PATCH`, `DELETE` helpers
+- `src/api/queryClient.ts` — `QueryClient` with BFSI defaults (30s stale, no focus refetch, no mutation retry)
+- `src/services/example.ts` — reference service showing the `IRequest`/`IResponse` pattern
+- `src/app/App.tsx` — overlays \_shared App with `<QueryClientProvider>`
 
-## Feature pattern
+## Service-method pattern (vs RTK Query's dispatch style)
+
+You call services directly — no hooks, no dispatch:
 
 ```ts
-// src/features/Foo/api.ts
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { http } from '@/api/httpClient';
-import { fooResponseSchema, type FooQuery, type FooBody } from './schema';
+// src/services/kyc.ts
+import { POST, GET } from '@/api/http';
 
-const FOO_KEY = ['foo'] as const;
-
-export function useGetFoo(arg: FooQuery) {
-  return useQuery({
-    queryKey: [...FOO_KEY, arg],
-    queryFn: async () => {
-      const { data } = await http.get('/foo', { params: arg });
-      return fooResponseSchema.parse(data);
-    },
-  });
+export interface IKycRequest {
+  pan: string;
+  aadhaar: string;
+}
+export interface IKycResponse {
+  id: string;
+  status: 'pending' | 'approved';
 }
 
-export function useCreateFoo() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: async (body: FooBody) => {
-      const { data } = await http.post('/foo', body);
-      return fooResponseSchema.parse(data);
-    },
-    onSuccess: () => qc.invalidateQueries({ queryKey: FOO_KEY }),
-  });
-}
+export const submitKyc = (payload: IKycRequest): Promise<IKycResponse> =>
+  POST<IKycResponse, IKycRequest>('/kyc', payload);
+
+export const getKyc = (id: string): Promise<IKycResponse> => GET<IKycResponse>(`/kyc/${id}`);
 ```
 
-Scaffold a new feature: `/bfsi-feature MyFeature` (variant auto-detected as TanStack).
+Inside components, wire with hooks:
 
-## Why Zustand for client state?
+```tsx
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { submitKyc, getKyc } from '@/services/kyc';
 
-TanStack Query handles **server state** beautifully but isn't suited for **client state**
-(UI state, drafts, ephemeral selections). Zustand is the lightweight pick: small, no
-Provider, TypeScript-friendly. Use it for:
+const submit = useMutation({ mutationFn: submitKyc });
+const detail = useQuery({ queryKey: ['kyc', id], queryFn: () => getKyc(id) });
+```
 
-- Local UI state that needs to survive route changes
-- Form drafts (in concert with React Hook Form)
-- Cross-component selections (selected rows, filters)
+## Auth: set-once at login
 
-Don't use Zustand for server data — that's what TanStack Query is for.
+The axios instance has no per-request token interceptor. Set the token once at login:
+
+```ts
+import { setAuthToken } from '@your-real-scope/core/http';
+import axiosInstance from '@/api/axiosInstance';
+
+// inside login mutation onSuccess:
+setAuthToken(axiosInstance, response.token);
+```
+
+On 401, the instance's `onUnauthorized` callback clears the token and redirects to `/login`.
+
+## Why Zustand for client state
+
+TanStack Query owns **server state** (fetches, caches, invalidation). Use Zustand for **client state** (UI state surviving route changes, form drafts, cross-component selections). Don't use Zustand for server data — that's what TanStack Query is for.
