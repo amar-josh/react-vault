@@ -76,7 +76,7 @@ export const fooApi = createApi({
 });
 ```
 
-Each endpoint can opt-in to success/error notifications via `showSuccessNotification` / `showFailureNotification` flags on the query object (rsense parity).
+Each endpoint can opt-in to success/error notifications via `showSuccessNotification` / `showFailureNotification` flags on the query object.
 
 ## Conventions enforced
 

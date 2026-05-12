@@ -1,240 +1,148 @@
 ---
 name: rtk-query-api
-description: 'Create RTK Query API files for Rails-backed React apps. Covers createApi setup with custom axiosBaseQuery, CRUD endpoints (builder.query/mutation), tagTypes for cache invalidation, auto-notification on mutations, typed request/response interfaces, and hook exports. Use when: creating API layer, adding endpoints, RTK Query, data fetching, cache invalidation, api.ts file.'
+description: Create an RTK Query API file for a feature. Covers createApi with axiosBaseQuery, query/mutation endpoints, tagTypes for cache invalidation, opt-in success/error notifications, typed request/response interfaces with Zod parse, and exported React hooks. Use when adding a new feature's api.ts, adding endpoints to an existing API, or wiring tag types.
 ---
 
-# RTK Query API Pattern
+# RTK Query API
 
-## Overview
+Every feature has an `api.ts` at `src/features/<Feature>/api.ts`. It uses `createApi` with the project's `axiosBaseQuery` and exposes auto-generated React hooks.
 
-Every feature module has an `api.ts` file that defines all data-fetching logic using RTK Query's `createApi`. This eliminates manual loading/error state management, provides automatic caching, and integrates with a custom `axiosBaseQuery` that handles auth tokens and notifications.
-
-## File Structure
+## File map (typical feature)
 
 ```
-src/features/{Domain}/{Feature}/api.ts
+src/features/<Feature>/
+├── api.ts             createApi + endpoints
+├── schema.ts          Zod schemas (request + response)
+├── types.ts           inferred types from Zod
+├── constants.ts       cache tag references + audit event names
+└── containers/...
 ```
 
-## Complete Pattern
+## Workflow — new feature API
 
-```typescript
+### Step 1 — Define schemas
+
+`src/features/Kyc/schema.ts`:
+
+```ts
+import { z } from 'zod';
+import { PAN_REGEX, AADHAAR_REGEX } from '@/utils/constants/regexConstants';
+
+export const kycRecordSchema = z.object({
+  id: z.string(),
+  pan: z.string().regex(PAN_REGEX),
+  aadhaar: z.string().regex(AADHAAR_REGEX),
+  status: z.enum(['pending', 'approved', 'rejected']),
+  createdAt: z.coerce.date(),
+});
+
+export const kycListResponseSchema = z.object({
+  items: z.array(kycRecordSchema),
+  total: z.number().int().nonnegative(),
+});
+
+export const kycSubmitRequestSchema = z.object({
+  pan: z.string().regex(PAN_REGEX),
+  aadhaar: z.string().regex(AADHAAR_REGEX),
+});
+```
+
+Types are inferred — never hand-write them:
+
+```ts
+// types.ts
+import { z } from 'zod';
+import type { kycRecordSchema, kycListResponseSchema, kycSubmitRequestSchema } from './schema';
+
+export type KycRecord = z.infer<typeof kycRecordSchema>;
+export type KycListResponse = z.infer<typeof kycListResponseSchema>;
+export type KycSubmitRequest = z.infer<typeof kycSubmitRequestSchema>;
+```
+
+### Step 2 — Create the API
+
+`src/features/Kyc/api.ts`:
+
+```ts
 import { createApi } from '@reduxjs/toolkit/query/react';
-
 import axiosBaseQuery from '@/axiosconfig/baseQuery';
+import { KYC_URLS } from '@/utils/constants/urlConstants';
+import { GET, POST } from '@/utils/constants/apiConstants';
+import { kycRecordSchema, kycListResponseSchema } from './schema';
+import type { KycListResponse, KycSubmitRequest, KycRecord } from './types';
 
-import { GET, POST, PUT, DELETE } from '@/utils/constants/apiConstants';
-import { FEATURE_ENDPOINTS } from '@/utils/constants/urlConstant';
-import { API_TAG_TYPES } from '@/utils/constants/apiTagTypeConstants';
-
-// Import typed interfaces from the feature's .d.ts file
-import {
-  IFeatureItem,
-  IFeatureListResponse,
-  IFeatureDetailResponse,
-  ICreateFeatureRequest,
-  IUpdateFeatureRequest,
-} from './Feature.d';
-
-// Destructure endpoints from URL constants
-const { FETCH_LIST, CREATE, FETCH_DETAIL, UPDATE, DELETE_ITEM } = FEATURE_ENDPOINTS;
-const { FEATURE_LIST } = API_TAG_TYPES;
-
-const featureApi = createApi({
-  // Unique key in Redux store - must match rootReducer registration
-  reducerPath: 'featureApi',
-
-  // Custom axios-based query function (handles auth headers, interceptors)
+const kycApi = createApi({
+  reducerPath: 'kycApi',
   baseQuery: axiosBaseQuery(),
-
-  // Cache tag types for automatic invalidation
-  tagTypes: [FEATURE_LIST],
-
+  tagTypes: ['Kyc'],
   endpoints: (builder) => ({
-    // ---- QUERIES (GET requests) ----
-
-    // Fetch list - provides cache tag
-    fetchFeatureList: builder.query<IFeatureListResponse, void>({
-      query: () => ({
-        url: FETCH_LIST,
-        method: GET,
-      }),
-      providesTags: [FEATURE_LIST],
+    getKycList: builder.query<KycListResponse, void>({
+      query: () => ({ url: KYC_URLS.LIST, method: GET }),
+      transformResponse: (raw: unknown) => kycListResponseSchema.parse(raw),
+      providesTags: ['Kyc'],
     }),
-
-    // Fetch single item by UID
-    fetchFeatureDetail: builder.query<IFeatureDetailResponse, { uid: string }>({
-      query: ({ uid }) => ({
-        url: `${FETCH_DETAIL}/${uid}`,
-        method: GET,
-      }),
+    getKycDetail: builder.query<KycRecord, string>({
+      query: (id) => ({ url: KYC_URLS.DETAIL(id), method: GET }),
+      transformResponse: (raw: unknown) => kycRecordSchema.parse(raw),
+      providesTags: (_, __, id) => [{ type: 'Kyc', id }],
     }),
-
-    // Fetch dropdown/select options (common for forms)
-    fetchFeatureDropdown: builder.query<IFeatureListResponse, void>({
-      query: () => ({
-        url: FETCH_LIST,
-        method: GET,
-      }),
-    }),
-
-    // ---- MUTATIONS (POST/PUT/DELETE) ----
-
-    // Create - invalidates list cache, shows success notification
-    createFeature: builder.mutation<IFeatureDetailResponse, ICreateFeatureRequest>({
-      query: (data) => ({
-        url: CREATE,
+    submitKyc: builder.mutation<KycRecord, KycSubmitRequest>({
+      query: (body) => ({
+        url: KYC_URLS.SUBMIT,
         method: POST,
-        data,
-        showSuccesNotification: true, // triggers toast via baseQuery
+        data: body,
+        showSuccessNotification: true,
+        showFailureNotification: true,
       }),
-      invalidatesTags: [FEATURE_LIST],
-    }),
-
-    // Update - invalidates list cache
-    updateFeature: builder.mutation<IFeatureDetailResponse, IUpdateFeatureRequest>({
-      query: ({ uid, ...data }) => ({
-        url: `${UPDATE}/${uid}`,
-        method: PUT,
-        data,
-        showSuccesNotification: true,
-      }),
-      invalidatesTags: [FEATURE_LIST],
-    }),
-
-    // Delete - invalidates list cache
-    deleteFeature: builder.mutation<IFeatureDetailResponse, string>({
-      query: (uid) => ({
-        url: `${DELETE_ITEM}/${uid}`,
-        method: DELETE,
-        showSuccesNotification: true,
-      }),
-      invalidatesTags: [FEATURE_LIST],
+      transformResponse: (raw: unknown) => kycRecordSchema.parse(raw),
+      invalidatesTags: ['Kyc'],
     }),
   }),
 });
 
-// Export auto-generated hooks for use in containers
-export const {
-  useFetchFeatureListQuery,
-  useFetchFeatureDetailQuery,
-  useFetchFeatureDropdownQuery,
-  useCreateFeatureMutation,
-  useUpdateFeatureMutation,
-  useDeleteFeatureMutation,
-} = featureApi;
-
-// Default export for store/rootReducer registration
-export default featureApi;
+export const { useGetKycListQuery, useGetKycDetailQuery, useSubmitKycMutation } = kycApi;
+export default kycApi;
 ```
 
-## Key Rules
+### Step 3 — Register in the store
 
-### Naming Conventions
+See the `redux-store-integration` skill: register `kycApi.reducer` in `rootReducer.ts` and `kycApi.middleware` in `store.ts`.
 
-- `reducerPath`: camelCase ending in `Api` (e.g., `bankAccountApi`, `departmentsApi`)
-- Query hooks: `useFetch{Feature}{Action}Query` or `use{Action}Query`
-- Mutation hooks: `use{Action}{Feature}Mutation` or `use{Action}Mutation`
-- Tag types: SCREAMING_SNAKE from `apiTagTypeConstants.ts`
+### Step 4 — Use the hooks
 
-### baseQuery Notification Flags
+```tsx
+import { useGetKycListQuery, useSubmitKycMutation } from '@/features/Kyc/api';
 
-The custom `axiosBaseQuery` supports two boolean flags on any endpoint config:
-
-- `showSuccesNotification: true` - dispatches success toast on 2xx response
-- `showFailureNotification: true` - dispatches error toast on failure
-- Mutations typically set `showSuccesNotification: true`
-- Queries typically set neither (silent fetch)
-
-### Cache Invalidation Strategy
-
-- Every query that returns a list provides a tag: `providesTags: [TAG_NAME]`
-- Every mutation that changes data invalidates: `invalidatesTags: [TAG_NAME]`
-- For cross-API invalidation, use the `invalidateCacheMiddleware` (see Redux Store Integration skill)
-- Use `skipToken` from RTK Query to conditionally skip queries:
-  ```typescript
-  const { data } = useFetchDetailQuery(isModalOpen ? { uid } : skipToken);
-  ```
-
-### Conditional/Lazy Queries
-
-```typescript
-import { skipToken } from '@reduxjs/toolkit/query';
-
-// Only fetch when modal is open AND we have an ID
-const { data } = useFetchFeatureDetailQuery(
-  isModalOpen && selectedId ? { uid: selectedId } : skipToken,
-);
-```
-
-### GET Requests with Params
-
-For GET requests, pass data as `params` (axiosBaseQuery handles this automatically when method is GET):
-
-```typescript
-fetchFiltered: builder.query<IResponse, IFilterParams>({
-  query: (data) => ({
-    url: FETCH_URL,
-    method: GET,
-    data, // axiosBaseQuery converts to query params for GET
-  }),
-}),
-```
-
-### Response Type Override
-
-For file downloads or blob responses:
-
-```typescript
-downloadReport: builder.mutation<Blob, { uid: string }>({
-  query: ({ uid }) => ({
-    url: `${DOWNLOAD_URL}/${uid}`,
-    method: GET,
-    responseType: "blob",
-  }),
-}),
-```
-
-## After Creating api.ts
-
-You MUST register the new API in two files:
-
-1. `src/redux/rootReducer.ts` - add `[featureApi.reducerPath]: featureApi.reducer`
-2. `src/redux/store.ts` - add `featureApi.middleware` to middleware array
-
-See the **Redux Store Integration** skill for details.
-
-## Type Definition Pattern
-
-Create a `.d.ts` file alongside `api.ts`:
-
-```typescript
-// Feature.d.ts
-export interface IFeatureItem {
-  uid: string;
-  attributes: {
-    name: string;
-    code: string;
-    // ... feature-specific fields
-  };
-}
-
-export interface IFeatureListResponse {
-  data: IFeatureItem[];
-  message?: string;
-}
-
-export interface IFeatureDetailResponse {
-  data: IFeatureItem;
-  message?: string;
-  success?: boolean;
-}
-
-export interface ICreateFeatureRequest {
-  name: string;
-  code: string;
-}
-
-export interface IUpdateFeatureRequest extends ICreateFeatureRequest {
-  uid: string;
+function KycList() {
+  const { data, isLoading, error } = useGetKycListQuery();
+  const [submit] = useSubmitKycMutation();
+  // ...
 }
 ```
+
+## Conventions enforced
+
+- ❌ NEVER use `fetchBaseQuery` — always `axiosBaseQuery()` (so notifications/auth/interceptors apply).
+- ❌ NEVER skip `transformResponse: schema.parse` — every response must validate at runtime.
+- ❌ NEVER hand-write request/response types — infer from Zod.
+- ❌ NEVER inline a URL string — use `urlConstants.ts`.
+- ❌ NEVER inline a method string — use `apiConstants.ts` (`GET`, `POST`, …).
+- ✅ One `reducerPath` per feature API (kebab → camelCase: `kycApi`, `loanApi`).
+- ✅ Mutations always set `showFailureNotification: true`. Queries usually don't.
+- ✅ `tagTypes` from `tagTypes.ts` catalog (see constants-organization skill).
+- ✅ Audit-sensitive mutations also dispatch audit events (see the toolkit's `bfsi-audit-action` skill).
+
+## Notification flags
+
+```ts
+showSuccessNotification: true; // success path dispatches toast
+showFailureNotification: true; // error path dispatches toast
+```
+
+Both default to `false` — opt-in per endpoint. Read by `axiosBaseQuery` and routed through your Notification slice (see the `axios-auth` skill's notification-wiring reference).
+
+## References
+
+- [`references/endpoint-cookbook.md`](references/endpoint-cookbook.md) — list, detail, create, update, delete, paginated, polling, file-upload examples
+- [`references/optimistic-update.md`](references/optimistic-update.md) — when and how to do optimistic UI updates with `onQueryStarted`
+- [`references/cache-strategies.md`](references/cache-strategies.md) — `providesTags` / `invalidatesTags` patterns by feature shape

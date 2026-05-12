@@ -1,210 +1,159 @@
 ---
 name: redux-store-integration
-description: 'Wire new RTK Query APIs and Redux slices into the store. Covers registering API reducers in rootReducer.ts, adding middleware in store.ts, creating Redux slices with createSlice, cross-API cache invalidation middleware, typed hooks (useAppDispatch/useAppSelector), and localStorage persistence. Use when: registering new API, adding slice, store setup, cache invalidation, middleware, Redux integration.'
+description: Wire a new RTK Query API or Redux slice into the store. Covers registering reducers in rootReducer.ts, appending middleware in store.ts, using typed hooks (useAppDispatch / useAppSelector), and cross-API cache invalidation. Use when the user just scaffolded a new feature's api.ts or slice.ts and needs to plug it into the store, or asks about cache invalidation middleware, typed hooks, or Redux wiring.
 ---
 
 # Redux Store Integration
 
-## Overview
+After scaffolding a new feature with an `api.ts` (RTK Query) or `slice.ts` (regular Redux), you have to register it in TWO places. Both are tiny but easy to forget.
 
-The Redux store has three integration points when adding new features:
+## File map
 
-1. `rootReducer.ts` - register API reducer + optional slice reducer
-2. `store.ts` - register API middleware
-3. `invaliadteCacheMiddleware.ts` - cross-API cache invalidation (when needed)
+```
+src/redux/
+├── store.ts                       configureStore + middleware concat
+├── rootReducer.ts                 combineReducers (slices + API reducers)
+├── reduxHooks.ts                  typed useAppDispatch / useAppSelector
+└── invalidateCacheMiddleware.ts   cross-API cache invalidation rules
+```
 
-## Registering a New RTK Query API
+## Workflow — adding an RTK Query API
 
-### Step 1: rootReducer.ts
+### Step 1 — Register the reducer
 
-```typescript
-// src/redux/rootReducer.ts
+Open `src/redux/rootReducer.ts`:
+
+```ts
 import { combineReducers } from '@reduxjs/toolkit';
-
-// ... existing imports ...
-import featureApi from '@/features/{Domain}/{Feature}/api';
+import kycApi from '@/features/Kyc/api';
 
 const rootReducer = combineReducers({
-  // Traditional slices (UI state)
-  login: loginReducer,
-  sidebar: sidebarReducer,
-  notification: notificationReducer,
-  message: messageReducer,
-  tools: toolsReducer,
-  systemConstants: systemConstantsReducer,
-  programLevelCourses: programLevelCoursesReducer,
-
-  // RTK Query API reducers (computed key from reducerPath)
-  // ... existing API reducers ...
-  [featureApi.reducerPath]: featureApi.reducer, // ADD THIS
+  [kycApi.reducerPath]: kycApi.reducer,
 });
 
 export default rootReducer;
 ```
 
-### Step 2: store.ts
+Use `[api.reducerPath]` as the key — never a hardcoded string. The `reducerPath` is set inside `createApi({ reducerPath: 'kycApi', ... })`.
 
-```typescript
-// src/redux/store.ts
-import { configureStore } from '@reduxjs/toolkit';
-import { setupListeners } from '@reduxjs/toolkit/query';
+### Step 2 — Append the middleware
 
-// ... existing imports ...
-import featureApi from '@/features/{Domain}/{Feature}/api';
+Open `src/redux/store.ts`:
+
+```ts
+import kycApi from '@/features/Kyc/api';
 
 const store = configureStore({
   reducer: rootReducer,
-  preloadedState,
-  middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware().concat([
-      invalidateCacheMiddleware,
-      // ... existing API middlewares ...
-      featureApi.middleware, // ADD THIS
-    ]),
+  middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat([kycApi.middleware]),
   devTools: true,
 });
-
-setupListeners(store.dispatch);
 ```
 
-## Creating a Redux Slice (for local UI state)
+Without this, RTK Query won't intercept the API's actions. Symptoms: queries fire but cache never updates, subscriptions don't trigger refetch.
 
-Only create slices for state that needs to persist across components (not for API data - RTK Query handles that).
+### Step 3 — Use the API in components
 
-```typescript
-// src/features/{Domain}/{Feature}/slice.ts
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+```tsx
+import { useGetKycListQuery } from '@/features/Kyc/api';
+import { useAppDispatch, useAppSelector } from '@/redux/reduxHooks';
 
-interface IFeatureState {
-  selectedTab: string;
-  isExpanded: boolean;
+function KycList() {
+  const { data, isLoading, error } = useGetKycListQuery();
+  // ...
+}
+```
+
+NEVER use plain `useDispatch` / `useSelector` directly — use the typed hooks. They give you `RootState` autocomplete + `AppDispatch` action types.
+
+## Workflow — adding a regular Redux slice
+
+### Step 1 — Create the slice
+
+In `src/features/<Feature>/slice.ts`:
+
+```ts
+import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
+
+interface FeatureState {
+  selectedId: string | null;
+  filters: Record<string, unknown>;
 }
 
-const initialState: IFeatureState = {
-  selectedTab: 'active',
-  isExpanded: false,
-};
+const initialState: FeatureState = { selectedId: null, filters: {} };
 
 const featureSlice = createSlice({
   name: 'feature',
   initialState,
   reducers: {
-    setSelectedTab: (state, action: PayloadAction<string>) => {
-      state.selectedTab = action.payload;
+    setSelected: (state, action: PayloadAction<string | null>) => {
+      state.selectedId = action.payload;
     },
-    toggleExpanded: (state) => {
-      state.isExpanded = !state.isExpanded;
+    setFilters: (state, action: PayloadAction<Record<string, unknown>>) => {
+      state.filters = action.payload;
     },
-    resetFeatureState: () => initialState,
+    reset: () => initialState,
   },
 });
 
-export const { setSelectedTab, toggleExpanded, resetFeatureState } = featureSlice.actions;
+export const { setSelected, setFilters, reset } = featureSlice.actions;
 export const featureReducer = featureSlice.reducer;
 ```
 
-Register the slice in `rootReducer.ts`:
+### Step 2 — Register
 
-```typescript
-import { featureReducer } from '@/features/{Domain}/{Feature}/slice';
+In `src/redux/rootReducer.ts`:
+
+```ts
+import { featureReducer } from '@/features/Feature/slice';
 
 const rootReducer = combineReducers({
-  feature: featureReducer, // ADD under traditional slices section
-  // ... rest
+  feature: featureReducer,
 });
 ```
 
-## Typed Redux Hooks
+No middleware step for plain slices (they go through `getDefaultMiddleware` automatically).
 
-Always use the typed hooks from `src/redux/reduxHooks.ts`:
+## Cross-API cache invalidation
 
-```typescript
-import { useAppDispatch, useAppSelector } from '@/redux/reduxHooks';
-import { RootState } from '@/redux/store';
+When mutation in one API should invalidate another API's cache, use `src/redux/invalidateCacheMiddleware.ts`:
 
-// In a container:
-const dispatch = useAppDispatch();
-const { attributes } = useAppSelector((state: RootState) => state.login.data);
-const { selectedTab } = useAppSelector((state: RootState) => state.feature);
+```ts
+import type { Middleware } from '@reduxjs/toolkit';
+import kycApi from '@/features/Kyc/api';
+import userApi from '@/features/User/api';
 
-// Dispatching actions:
-dispatch(setSelectedTab('draft'));
-```
-
-## Cross-API Cache Invalidation Middleware
-
-When a mutation in one API should invalidate cache in another API (e.g., creating a department should refresh the department dropdown used by another feature), use the `invalidateCacheMiddleware`:
-
-```typescript
-// src/redux/invaliadteCacheMiddleware.ts
-
-// The middleware watches for fulfilled mutations and invalidates tags across APIs:
-const invalidateCacheMiddleware = (storeAPI: any) => (next: any) => (action: any) => {
-  const result = next(action);
-
-  // Example: When department list changes, invalidate department dropdowns in other APIs
-  if (action.type?.endsWith('/fulfilled')) {
-    const tagType = action.meta?.arg?.type;
-
-    // Map tag types to APIs that need invalidation
-    const crossApiInvalidations: Record<string, Array<{ api: any; tags: string[] }>> = {
-      [DEPARTMENT_LIST]: [
-        { api: departmentsApi, tags: [DEPARTMENT_DROPDOWN_LIST] },
-        { api: programApi, tags: [PROGRAM_LIST] },
-      ],
-      [UNIVERSITY]: [{ api: educationalUnitApi, tags: [EDUCATIONAL_UNIT_LIST] }],
-    };
-
-    // Perform cross-API invalidation
-    const invalidations = crossApiInvalidations[tagType];
-    if (invalidations) {
-      invalidations.forEach(({ api, tags }) => {
-        tags.forEach((tag) => {
-          storeAPI.dispatch(api.util.invalidateTags([tag]));
-        });
-      });
-    }
+const invalidateCacheMiddleware: Middleware = (storeApi) => (next) => (action) => {
+  if (kycApi.endpoints.submitKyc.matchFulfilled(action)) {
+    storeApi.dispatch(userApi.util.invalidateTags(['User']));
   }
-
-  return result;
+  return next(action);
 };
+
+export default invalidateCacheMiddleware;
 ```
 
-## Manual Cache Invalidation (from containers)
+Make sure `invalidateCacheMiddleware` is included in `store.ts`'s middleware concat array.
 
-Sometimes you need to manually invalidate another API's cache from a container:
+See [`references/middleware-patterns.md`](references/middleware-patterns.md) for common invalidation patterns.
 
-```typescript
-import { useAppDispatch } from '@/redux/reduxHooks';
-import departmentsApi from '@/features/Settings/Departments/api';
+## Conventions enforced
 
-const dispatch = useAppDispatch();
+- ❌ NEVER import `useDispatch` / `useSelector` from `react-redux` — use `useAppDispatch` / `useAppSelector` from `reduxHooks`.
+- ❌ NEVER hardcode an API's reducerPath as a string in `rootReducer.ts` — use `[api.reducerPath]`.
+- ❌ NEVER skip the middleware registration — leads to silent cache-bust failures.
+- ✅ Register middleware in the order: `invalidateCacheMiddleware` first, then feature APIs.
+- ✅ Slices live next to their feature (`src/features/<Feature>/slice.ts`).
+- ✅ Each API has a unique `reducerPath`; never share.
 
-// After a successful mutation:
-dispatch(departmentsApi.util.invalidateTags(['departmentList']));
-```
+## Checklist when wiring a new feature
 
-## localStorage Persistence
+- [ ] Reducer registered in `rootReducer.ts`
+- [ ] Middleware appended in `store.ts` (if it's an API)
+- [ ] Containers use `useAppDispatch` / `useAppSelector` (typed)
+- [ ] Cross-API invalidations added to `invalidateCacheMiddleware.ts` (if any)
 
-The login state is persisted to localStorage automatically via store subscription:
+## References
 
-```typescript
-// In store.ts:
-store.subscribe(() => {
-  local.setItem(LOGGED_IN_USER, store.getState().login);
-});
-
-// Restored on startup:
-const preloadedState = {
-  login: local.getItem(LOGGED_IN_USER) || initialState,
-};
-```
-
-## Key Rules
-
-1. Every RTK Query API needs BOTH reducer in `rootReducer.ts` AND middleware in `store.ts`
-2. Use `[api.reducerPath]: api.reducer` syntax (computed property) in rootReducer
-3. Only create slices for UI state that must persist across component unmounts
-4. Always use typed hooks (`useAppDispatch`, `useAppSelector`) - never raw `useDispatch`/`useSelector`
-5. Cross-API invalidation goes in the middleware, not in individual containers
-6. Only `login` state is persisted to localStorage - other state is ephemeral
+- [`references/middleware-patterns.md`](references/middleware-patterns.md) — common cross-API invalidation patterns
+- [`references/localStorage-persistence.md`](references/localStorage-persistence.md) — pattern for persisting a slice to localStorage
