@@ -3,7 +3,11 @@ import animate from 'tailwindcss-animate';
 
 const config: Config = {
   darkMode: ['class'],
-  content: ['./index.html', './src/**/*.{ts,tsx}', './node_modules/@scope/ui/dist/**/*.{js,mjs}'],
+  content: [
+    './index.html',
+    './src/**/*.{ts,tsx}',
+    './node_modules/@your-real-scope/ui/dist/**/*.{js,mjs}',
+  ],
   theme: {
     container: {
       center: true,

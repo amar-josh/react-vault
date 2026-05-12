@@ -1,5 +1,5 @@
 {
-  "name": "@scope/toolkit",
+  "name": "@your-real-scope/toolkit",
   "version": "0.1.0",
   "private": false,
   "description": "Claude Code plugin: BFSI-aware skills, agents, hooks, and commands.",

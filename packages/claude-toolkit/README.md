@@ -1,6 +1,6 @@
-# @scope/toolkit
+# @your-real-scope/toolkit
 
-A Claude Code plugin that makes Claude **BFSI-aware** for every Your Org BFSI React project. It ships skills for scaffolding, hooks that enforce security policy, agents that review PRs, and commands that orchestrate the lot.
+A Claude Code plugin that makes Claude **BFSI-aware** for every Your Real Company BFSI React project. It ships skills for scaffolding, hooks that enforce security policy, agents that review PRs, and commands that orchestrate the lot.
 
 Built per the official [Claude Code spec](https://code.claude.com/docs/) — skill directories in kebab-case, exact `SKILL.md` filename, YAML frontmatter with WHAT + WHEN descriptions, progressive disclosure, `${CLAUDE_PLUGIN_ROOT}` path resolution, exit code 2 to block, JSON for structured hook decisions.
 

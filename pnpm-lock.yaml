@@ -107,7 +107,7 @@ importers:
 
   packages/ui:
     dependencies:
-      '@scope/core':
+      '@your-real-scope/core':
         specifier: workspace:*
         version: link:../core
       class-variance-authority:

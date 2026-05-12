@@ -1,5 +1,5 @@
 {
-  "name": "@scope/ui",
+  "name": "@your-real-scope/ui",
   "version": "0.1.0",
   "description": "Tailwind + shadcn/ui + BFSI-specific React components: PIIMaskedDisplay, ConfirmModal, SecureFormField, AccessControlledTable, CurrencyDisplay, DateTimeDisplay, and more.",
   "license": "UNLICENSED",
@@ -52,7 +52,7 @@
     "react-dom": "18.3.1"
   },
   "dependencies": {
-    "@scope/core": "workspace:*",
+    "@your-real-scope/core": "workspace:*",
     "class-variance-authority": "0.7.0",
     "clsx": "2.1.1",
     "tailwind-merge": "2.3.0",

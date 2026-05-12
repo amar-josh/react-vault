@@ -1,13 +1,13 @@
 {
   "name": "toolkit",
   "version": "0.1.0",
-  "description": "BFSI-aware skills, agents, hooks, and commands for Claude Code. Bakes in security review, PII scanning, audit logging, compliance checks, and BFSI scaffolding for every Your Org BFSI React project.",
+  "description": "BFSI-aware skills, agents, hooks, and commands for Claude Code. Bakes in security review, PII scanning, audit logging, compliance checks, and BFSI scaffolding for every Your Real Company BFSI React project.",
   "author": {
-    "name": "Your Org",
+    "name": "Your Real Company",
     "url": "https://your-org.example"
   },
   "license": "UNLICENSED",
-  "homepage": "https://github.com/YOUR_ORG/react-starter",
+  "homepage": "https://github.com/your-real-org/react-starter",
   "keywords": [
     "bfsi",
     "banking",

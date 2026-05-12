@@ -23,7 +23,7 @@ Static compliance scan over the current branch's diff (`git diff origin/main...H
 4. **localStorage with PII** — `localStorage.setItem(..., user.pan)`, etc.
    - Pattern: `localStorage\.setItem.*\.(pan|aadhaar|account|password)`
 5. **Unencrypted IndexedDB** — direct `idb.put()` of objects containing PII fields
-   - Suggest using `secureStorage` from `@scope/core/storage`
+   - Suggest using `secureStorage` from `@your-real-scope/core/storage`
 6. **Missing CSRF token on mutation** — `fetch('/api/...', { method: 'POST', ... })` without `X-CSRF-Token` (if not using cookie-less JWT)
 
 ### High (fix before next sprint)

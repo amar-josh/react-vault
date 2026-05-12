@@ -1,7 +1,7 @@
 {
-  "name": "@scope/create-app",
+  "name": "@your-real-scope/create-app",
   "version": "0.1.0",
-  "description": "Scaffold a new Your Org BFSI React project. Pick a state-management variant (RTK Query or TanStack Query) and get a production-ready starter with security, audit, encryption, and Claude Code companion baked in.",
+  "description": "Scaffold a new Your Real Company BFSI React project. Pick a state-management variant (RTK Query or TanStack Query) and get a production-ready starter with security, audit, encryption, and Claude Code companion baked in.",
   "license": "UNLICENSED",
   "type": "module",
   "bin": {

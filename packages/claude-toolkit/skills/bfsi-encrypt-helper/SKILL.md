@@ -1,11 +1,11 @@
 ---
 name: bfsi-encrypt-helper
-description: Reference for encrypting and decrypting sensitive data using @scope/core/encryption. Covers AES-GCM (symmetric), RSA-OAEP (asymmetric), PBKDF2 (key derivation), and envelope encryption patterns. Auto-loads when the user asks about encrypting data, decrypting data, key derivation, key rotation, Web Crypto API usage, securing sensitive fields, or implementing envelope encryption.
+description: Reference for encrypting and decrypting sensitive data using @your-real-scope/core/encryption. Covers AES-GCM (symmetric), RSA-OAEP (asymmetric), PBKDF2 (key derivation), and envelope encryption patterns. Auto-loads when the user asks about encrypting data, decrypting data, key derivation, key rotation, Web Crypto API usage, securing sensitive fields, or implementing envelope encryption.
 ---
 
 # BFSI Encryption Helper
 
-Reference for `@scope/core/encryption`. Uses the browser's Web Crypto API — no external dependencies, no key material crosses package boundaries unprotected.
+Reference for `@your-real-scope/core/encryption`. Uses the browser's Web Crypto API — no external dependencies, no key material crosses package boundaries unprotected.
 
 ## Algorithms
 
@@ -22,7 +22,7 @@ Reference for `@scope/core/encryption`. Uses the browser's Web Crypto API — no
 ### Encrypt a string with a known symmetric key
 
 ```ts
-import { aesgcm } from '@scope/core/encryption';
+import { aesgcm } from '@your-real-scope/core/encryption';
 
 const key = await aesgcm.generateKey();
 const ciphertext = await aesgcm.encrypt(key, 'sensitive value');
@@ -34,7 +34,7 @@ const plaintext = await aesgcm.decrypt(key, ciphertext);
 ### Derive a key from a password
 
 ```ts
-import { pbkdf2 } from '@scope/core/encryption';
+import { pbkdf2 } from '@your-real-scope/core/encryption';
 
 const salt = crypto.getRandomValues(new Uint8Array(16));
 const key = await pbkdf2.deriveKey(password, salt, { iterations: 600_000 });
@@ -48,7 +48,7 @@ const key = await pbkdf2.deriveKey(password, salt, { iterations: 600_000 });
 This is the right pattern for storing many fields with one key, with key rotation:
 
 ```ts
-import { envelope } from '@scope/core/encryption';
+import { envelope } from '@your-real-scope/core/encryption';
 
 // Setup: backend provides a public KEK (key-encrypting-key).
 const masterPublicKey = await rsaoaep.importPublicKey(masterPublicKeyPem);
@@ -71,7 +71,7 @@ Key rotation: rotate the KEK on the backend; re-encrypt only the small `encrypte
 
 - **Passwords**: never encrypt — hash with bcrypt/argon2 on the BACKEND. Client-side hashing helps you nothing.
 - **Card numbers**: never encrypt yourself. Use `<PCITokenizedCardInput>`. Real card data should never reach your app.
-- **Auth tokens**: don't encrypt — protect via secure storage (memory-first, see `@scope/core/storage`).
+- **Auth tokens**: don't encrypt — protect via secure storage (memory-first, see `@your-real-scope/core/storage`).
 - **Session cookies**: server's job, not yours.
 
 ## Anti-patterns
@@ -98,7 +98,7 @@ const hash = crypto.subtle.digest('SHA-1', data); // Use SHA-256 minimum
 After implementing encryption, verify with:
 
 ```ts
-import { aesgcm } from '@scope/core/encryption';
+import { aesgcm } from '@your-real-scope/core/encryption';
 import { describe, expect, it } from 'vitest';
 
 describe('encryption round-trip', () => {

@@ -24,7 +24,7 @@ This means: edit one Zod schema, and types + runtime checks update together. No 
 
 ## Why audit-wrapped mutations?
 
-Every state-changing API call must be audited for BFSI compliance (RBI Annexure I, SOC2 CC7.3). The `useAuditedMutation` hook from `@scope/core/audit` wraps RTK Query / TanStack Query mutations and:
+Every state-changing API call must be audited for BFSI compliance (RBI Annexure I, SOC2 CC7.3). The `useAuditedMutation` hook from `@your-real-scope/core/audit` wraps RTK Query / TanStack Query mutations and:
 
 1. Generates an event ID (UUID v4)
 2. Records: actor, action, target, timestamp, request hash

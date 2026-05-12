@@ -15,7 +15,7 @@ Generates a `react-hook-form` + `zod` form with BFSI-secure defaults wired into 
 ```
 <TargetFile>.tsx
 └── <FormName>Form               # Container component
-    ├── useFormWithZod()         # from @scope/ui
+    ├── useFormWithZod()         # from @your-real-scope/ui
     ├── audit-wrapped onSubmit   # via useAuditedAction
     ├── PIIMaskedDisplay         # auto-wrap for fields matching PII pattern
     └── BFSI defaults:
@@ -50,7 +50,7 @@ If a field name doesn't match a preset, fall back to `z.string().min(1)` and fla
 
 ### Step 3: Generate the form component
 
-Use the template at `references/templates/form.tsx.tpl`. Imports from `@scope/ui` and `@scope/core`. Submit handler uses `useAuditedAction("<feature>.<form>.submitted")`.
+Use the template at `references/templates/form.tsx.tpl`. Imports from `@your-real-scope/ui` and `@your-real-scope/core`. Submit handler uses `useAuditedAction("<feature>.<form>.submitted")`.
 
 ### Step 4: Add i18n keys
 
@@ -58,12 +58,12 @@ Add label/placeholder/error keys to the project's translation files (en.json + h
 
 ### Step 5: Verify
 
-Run `pnpm typecheck` on the new file. If `useFormWithZod` import fails, the project doesn't have `@scope/ui` installed — tell the user to install it.
+Run `pnpm typecheck` on the new file. If `useFormWithZod` import fails, the project doesn't have `@your-real-scope/ui` installed — tell the user to install it.
 
 ## Conventions
 
-- **Never** capture card numbers or CVVs in a regular form. Use `<PCITokenizedCardInput>` from `@scope/ui` which embeds a PCI-compliant iframe.
-- **Never** persist form drafts of PII fields to localStorage. Use `sessionStorage` with the `secureStorage` wrapper from `@scope/core/storage`.
+- **Never** capture card numbers or CVVs in a regular form. Use `<PCITokenizedCardInput>` from `@your-real-scope/ui` which embeds a PCI-compliant iframe.
+- **Never** persist form drafts of PII fields to localStorage. Use `sessionStorage` with the `secureStorage` wrapper from `@your-real-scope/core/storage`.
 - **Submit handler returns a Promise.** Errors thrown inside it are caught by the form, surfaced via toast, and audited as `<form>.submission_failed`.
 
 ## References

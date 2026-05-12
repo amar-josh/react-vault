@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { mask, type MaskerType } from '@scope/core/pii';
+import { mask, type MaskerType } from '@your-real-scope/core/pii';
 import { cn } from '../utils/cn.js';
 
 export interface PIIMaskedDisplayProps {
@@ -73,10 +73,14 @@ export function PIIMaskedDisplay({
   }, [onMask]);
 
   const handleReveal = useCallback(() => {
-    if (disabled) {return;}
+    if (disabled) {
+      return;
+    }
     if (revealed) {
       // Toggle off
-      if (timerRef.current) {clearTimeout(timerRef.current);}
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+      }
       reMask();
       return;
     }
@@ -84,20 +88,26 @@ export function PIIMaskedDisplay({
     onReveal?.();
     const duration = revealDurationMs ?? DEFAULT_REVEAL_MS[type];
     if (duration > 0) {
-      if (timerRef.current) {clearTimeout(timerRef.current);}
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+      }
       timerRef.current = setTimeout(reMask, duration);
     }
   }, [disabled, revealed, onReveal, revealDurationMs, type, reMask]);
 
   useEffect(() => {
     return () => {
-      if (timerRef.current) {clearTimeout(timerRef.current);}
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+      }
     };
   }, []);
 
   // Re-mask if value changes while revealed
   useEffect(() => {
-    if (revealed) {reMask();}
+    if (revealed) {
+      reMask();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value]);
 

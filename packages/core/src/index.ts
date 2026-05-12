@@ -1,9 +1,9 @@
 /**
- * @scope/core — barrel export.
+ * @your-real-scope/core — barrel export.
  *
  * Prefer importing from sub-paths for tree-shaking:
- *   import { aesgcm } from '@scope/core/encryption';
- *   import { maskPan } from '@scope/core/pii';
+ *   import { aesgcm } from '@your-real-scope/core/encryption';
+ *   import { maskPan } from '@your-real-scope/core/pii';
  *
  * Only re-exports for convenience.
  */

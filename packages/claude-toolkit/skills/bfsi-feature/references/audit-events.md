@@ -67,4 +67,4 @@ With metadata including the error code (but NEVER the raw error message — that
 - Full account numbers
 - Free-text user input from forms (it might contain PII)
 
-The `auditClient` in `@scope/core/audit` runs every payload through a PII scrubber before POST.
+The `auditClient` in `@your-real-scope/core/audit` runs every payload through a PII scrubber before POST.

@@ -1,6 +1,6 @@
-# @scope/react-starter
+# @your-real-scope/react-starter
 
-Canonical React starter for **BFSI** (Banking / Financial Services / Insurance) projects at Your Org.
+Canonical React starter for **BFSI** (Banking / Financial Services / Insurance) projects at Your Real Company.
 
 Every new BFSI app scaffolds from this. It bakes in the security, auth, audit, encryption, accessibility, and Claude Code companion tooling that every project needs — so you don't re-decide them.
 
@@ -27,7 +27,7 @@ Run one command and you have a production-ready React app with:
 ## Quick start (using the starter)
 
 ```bash
-npx @scope/create-app my-bank-app
+npx @your-real-scope/create-app my-bank-app
 ```
 
 Interactive prompts:
@@ -52,13 +52,13 @@ claude            # Claude Code session, with BFSI toolkit auto-enabled
 ## Repo layout (this monorepo)
 
 ```
-@scope/react-starter/
+@your-real-scope/react-starter/
 ├── docs/                              Docusaurus site (getting started, compliance)
 ├── packages/
-│   ├── cli/                           @scope/create-app — the npx command
-│   ├── core/                          @scope/core — security/auth/audit/encryption/utils
-│   ├── ui/                            @scope/ui — Tailwind + shadcn + BFSI components
-│   └── claude-toolkit/                @scope/toolkit — Claude Code plugin
+│   ├── cli/                           @your-real-scope/create-app — the npx command
+│   ├── core/                          @your-real-scope/core — security/auth/audit/encryption/utils
+│   ├── ui/                            @your-real-scope/ui — Tailwind + shadcn + BFSI components
+│   └── claude-toolkit/                @your-real-scope/toolkit — Claude Code plugin
 ├── templates/
 │   ├── _shared/                       common to both variants
 │   ├── rtk-query/                     RTK Query overlay
@@ -83,8 +83,8 @@ pnpm typecheck            # tsc --noEmit across all
 pnpm format               # prettier write
 
 # Run a script in one package
-pnpm --filter @scope/core build
-pnpm --filter @scope/toolkit lint
+pnpm --filter @your-real-scope/core build
+pnpm --filter @your-real-scope/toolkit lint
 ```
 
 ---
@@ -104,7 +104,7 @@ See [`docs/compliance.md`](./docs/compliance.md) for the full checklist mapping.
 
 ## Claude Code companion
 
-Every scaffolded project ships with `@scope/toolkit` enabled — a Claude Code plugin containing:
+Every scaffolded project ships with `@your-real-scope/toolkit` enabled — a Claude Code plugin containing:
 
 | Component | Count | Examples                                                                 |
 | --------- | ----- | ------------------------------------------------------------------------ |
@@ -133,4 +133,4 @@ Internal-only. PRs go through `bfsi-pr-reviewer` agent + human review. See [`doc
 
 ## Licence
 
-UNLICENSED — proprietary to Your Org. See [`LICENSE`](./LICENSE).
+UNLICENSED — proprietary to Your Real Company. See [`LICENSE`](./LICENSE).

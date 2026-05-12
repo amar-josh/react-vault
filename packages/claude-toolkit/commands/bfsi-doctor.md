@@ -32,8 +32,8 @@ Run each check, report status (✅ / ⚠️ / ❌), and remediation for any fail
 11. **Critical packages installed:**
 
     - `react`, `react-dom`
-    - `@scope/core` (or link: ref to local workspace)
-    - `@scope/ui`
+    - `@your-real-scope/core` (or link: ref to local workspace)
+    - `@your-real-scope/ui`
     - One of: `@reduxjs/toolkit` OR `@tanstack/react-query`
     - `react-hook-form`, `zod`
     - `react-router-dom`

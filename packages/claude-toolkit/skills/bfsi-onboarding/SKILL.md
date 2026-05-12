@@ -1,15 +1,15 @@
 ---
 name: bfsi-onboarding
-description: Onboards a new developer to a Your Org BFSI project. Explains the project structure, key conventions, how features are organised, where security primitives live, and how the Claude toolkit assists day-to-day work. Use when the user is new to the codebase and asks "how does this project work", "where do I start", "give me an overview", "what's the architecture", or "how do I add a feature".
+description: Onboards a new developer to a Your Real Company BFSI project. Explains the project structure, key conventions, how features are organised, where security primitives live, and how the Claude toolkit assists day-to-day work. Use when the user is new to the codebase and asks "how does this project work", "where do I start", "give me an overview", "what's the architecture", or "how do I add a feature".
 ---
 
 # BFSI Project Onboarding
 
-You are explaining a Your Org BFSI React project to a developer who is new to it. Be concise but thorough. Adapt depth based on their background (ask once if unclear: "Are you new to React, or new to this specific BFSI starter?").
+You are explaining a Your Real Company BFSI React project to a developer who is new to it. Be concise but thorough. Adapt depth based on their background (ask once if unclear: "Are you new to React, or new to this specific BFSI starter?").
 
 ## The project at a glance
 
-This project was scaffolded from `@scope/react-starter`. It's a **Vite + React + TypeScript SPA** with security, audit, and compliance primitives wired in by default.
+This project was scaffolded from `@your-real-scope/react-starter`. It's a **Vite + React + TypeScript SPA** with security, audit, and compliance primitives wired in by default.
 
 Stack:
 
@@ -36,8 +36,8 @@ src/
 
 Security & audit primitives come from npm packages:
 
-- `@scope/core` — encryption, PII utils, audit client, axios factory, auth helpers
-- `@scope/ui` — Tailwind + shadcn + BFSI compositions (PIIMaskedDisplay, ConfirmModal, etc.)
+- `@your-real-scope/core` — encryption, PII utils, audit client, axios factory, auth helpers
+- `@your-real-scope/ui` — Tailwind + shadcn + BFSI compositions (PIIMaskedDisplay, ConfirmModal, etc.)
 
 ## Day-to-day workflows
 
@@ -72,8 +72,8 @@ Use `/bfsi-commit` — generates audit-friendly Conventional Commits message.
 2. **All API responses are Zod-parsed**: runtime safety. Never trust the network shape.
 3. **All mutations are audited**: use `useAuditedMutation` (RTK) or wrap with `useAuditedAction` (TanStack).
 4. **All routes are protected**: `<ProtectedRoute permission="...">`. Defaults to authenticated-only if `permission` omitted, but explicit is better.
-5. **PII never enters localStorage**: use `secureStorage` from `@scope/core/storage` (memory-first, sessionStorage fallback, encrypted IndexedDB option).
-6. **No card data in HTML inputs**: use `<PCITokenizedCardInput>` from `@scope/ui`.
+5. **PII never enters localStorage**: use `secureStorage` from `@your-real-scope/core/storage` (memory-first, sessionStorage fallback, encrypted IndexedDB option).
+6. **No card data in HTML inputs**: use `<PCITokenizedCardInput>` from `@your-real-scope/ui`.
 7. **No `any` types**: types flow from Zod schemas.
 8. **All user-facing strings via `t()`**: never inline. Even error messages.
 9. **Conventional Commits with BFSI types**: see `/bfsi-commit`. `security` and `compliance` are extra types beyond standard set.
@@ -106,5 +106,5 @@ These are not personal — they protect every dev from a class of mistake that's
 - ❌ Don't trust client-side permission checks alone — backend re-checks every API call.
 - ❌ Don't use `localStorage` for tokens. Use the auth module's storage strategy.
 - ❌ Don't use `dangerouslySetInnerHTML` without sanitisation.
-- ❌ Don't write your own crypto — use `@scope/core/encryption`.
+- ❌ Don't write your own crypto — use `@your-real-scope/core/encryption`.
 - ❌ Don't commit to `main` directly — always via PR.

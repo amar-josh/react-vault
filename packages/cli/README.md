@@ -1,7 +1,7 @@
-# @scope/create-app
+# @your-real-scope/create-app
 
 ```bash
-npx @scope/create-app my-bank-app
+npx @your-real-scope/create-app my-bank-app
 ```
 
 Interactive prompts:
@@ -13,4 +13,4 @@ Interactive prompts:
 
 Scaffolds: `_shared` template + selected variant overlay → `npm install` → `git init` → first commit.
 
-The scaffolded project comes with `.claude/settings.json` enabling the `@scope/toolkit` plugin — Claude Code is BFSI-aware from the first session.
+The scaffolded project comes with `.claude/settings.json` enabling the `@your-real-scope/toolkit` plugin — Claude Code is BFSI-aware from the first session.

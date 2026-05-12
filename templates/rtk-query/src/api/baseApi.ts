@@ -6,7 +6,7 @@
 import { createApi } from '@reduxjs/toolkit/query/react';
 import type { BaseQueryFn } from '@reduxjs/toolkit/query';
 import type { AxiosRequestConfig, AxiosError } from 'axios';
-import { createAxios, type ApiError } from '@scope/core/http';
+import { createAxios, type ApiError } from '@your-real-scope/core/http';
 import { env } from '../env.js';
 
 const axios = createAxios({

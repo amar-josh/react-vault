@@ -8,7 +8,7 @@ allowed-tools: Read Write Edit Glob Grep Bash(mkdir:*) Bash(node:*)
 
 # BFSI Feature Scaffold
 
-Generates a complete feature module under `src/features/<FeatureName>/` following the Your Org BFSI architecture: container-component split, RTK Query / TanStack Query API layer, Zod validation, audit-wrapped mutations, accessible UI, i18n keys.
+Generates a complete feature module under `src/features/<FeatureName>/` following the Your Real Company BFSI architecture: container-component split, RTK Query / TanStack Query API layer, Zod validation, audit-wrapped mutations, accessible UI, i18n keys.
 
 ## Arguments
 
@@ -93,7 +93,7 @@ Output a short summary to the user:
 - **Sensitive fields get `<PIIMaskedDisplay>` wrappers** by default if their names match `/^(pan|aadhaar|account|mobile|email|dob)$/i`.
 - **All mutations go through `useAuditedMutation`** which logs the action.
 - **All routes are `<ProtectedRoute>`** with an explicit `permission` prop.
-- **All forms use `useFormWithZod`** (from `@scope/ui`) for consistent validation display.
+- **All forms use `useFormWithZod`** (from `@your-real-scope/ui`) for consistent validation display.
 
 ## Examples
 

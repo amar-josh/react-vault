@@ -10,7 +10,7 @@
 ## Scaffold a new BFSI project
 
 ```bash
-npx @scope/create-app my-bank-app
+npx @your-real-scope/create-app my-bank-app
 ```
 
 Interactive prompts ask for:
@@ -77,9 +77,9 @@ pnpm lint       # turbo lint
 To work on the CLI / core / UI:
 
 ```bash
-pnpm --filter @scope/core test:watch
-pnpm --filter @scope/ui dev
-pnpm --filter @scope/create-app dev
+pnpm --filter @your-real-scope/core test:watch
+pnpm --filter @your-real-scope/ui dev
+pnpm --filter @your-real-scope/create-app dev
 ```
 
 ## What's next

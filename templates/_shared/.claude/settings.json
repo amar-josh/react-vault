@@ -1,7 +1,7 @@
 {
   "$schema": "https://code.claude.com/schemas/settings.json",
   "enabledPlugins": [
-    "toolkit@scope"
+    "toolkit@your-real-scope"
   ],
   "permissions": {
     "deny": [
