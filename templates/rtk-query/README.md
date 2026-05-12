@@ -74,17 +74,11 @@ Register the API in `src/redux/rootReducer.ts` (reducer) and `src/redux/store.ts
 
 ## Bundled skills (when this variant is picked)
 
-The CLI also copies the canonical RTK pattern skills into the scaffolded project's `.claude/skills/`:
+The CLI copies a curated set of RTK-pattern skills into the scaffolded project's `.claude/skills/`:
 
-- `rtk-query-api`
 - `axios-auth`
-- `redux-store-integration`
-- `feature-module`
-- `container-component`
-- `routing-auth-guards`
 - `constants-organization`
-- `utils-pattern`
-- `theming-ui-wrappers`
-- `hoc-layout`
+- `redux-store-integration`
+- `rtk-query-api`
 
 Use `/bfsi-feature MyFeature` (provided by the inlined toolkit) — it'll generate RTK-style scaffolding aligned with these skills.

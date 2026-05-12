@@ -36,9 +36,21 @@ const TOOLKIT_ROOT = path.join(STARTER_ROOT, 'packages', 'claude-toolkit');
 // @<projectName> at scaffold time so every project has its own scope.
 const PLACEHOLDER_SCOPE = '@your-real-scope';
 
-// Where rsense-* skills live on this machine. Bundled into the scaffolded
-// project's .claude/skills/ when RTK Query is picked.
-const RSENSE_SKILLS_DIR = path.join(process.env.HOME ?? '/root', '.claude', 'skills');
+// User's Claude Code skills directory. The CLI sources a curated list of
+// RTK-pattern skills from here and copies them into the scaffolded project
+// when RTK Query is picked.
+const CLAUDE_SKILLS_DIR = path.join(process.env.HOME ?? '/root', '.claude', 'skills');
+
+// Curated map of source skill directory names → target name once copied into
+// the scaffolded project's .claude/skills/. The prefix on the source is an
+// artefact of where the skills currently live on disk; we drop it on copy so
+// the scaffolded project sees clean names.
+const RTK_BUNDLED_SKILLS: ReadonlyArray<{ source: string; target: string }> = [
+  { source: 'rsense-axios-auth', target: 'axios-auth' },
+  { source: 'rsense-constants-organization', target: 'constants-organization' },
+  { source: 'rsense-redux-store-integration', target: 'redux-store-integration' },
+  { source: 'rsense-rtk-query-api', target: 'rtk-query-api' },
+];
 
 interface ScaffoldOptions {
   projectName: string;
@@ -180,7 +192,7 @@ async function scaffold(opts: ScaffoldOptions): Promise<void> {
   //    package.json AND every source file (imports, tailwind config, etc.).
   await rewriteScope(target, opts.projectName, opts.localLink);
 
-  // 6. Inline the toolkit into .claude/, plus rsense-* skills if RTK
+  // 6. Inline the toolkit into .claude/, plus curated RTK skills if variant=rtk
   if (opts.inlineToolkit) {
     s.start('Inlining Claude toolkit into .claude/');
     await inlineToolkitInto(target, opts.variant);
@@ -365,9 +377,10 @@ async function collectSourceFiles(dir: string): Promise<string[]> {
  * Inline the Claude toolkit into <project>/.claude/.
  *
  * - Copies skills/, agents/, commands/ as-is (Claude Code recognises these at project scope)
- * - When variant is `rtk`, ALSO copies ~/.claude/skills/rsense-* into .claude/skills/
- *   so the project has the canonical rsense RTK-Query + axios + redux skills available.
- *   (No rsense skills are copied for TanStack — they're RTK-specific.)
+ * - When variant is `rtk`, ALSO copies a curated set of RTK-pattern skills from
+ *   ~/.claude/skills/ into .claude/skills/. The whitelist is RTK_BUNDLED_SKILLS.
+ *   Source dir name → target dir name (rewriting the SKILL.md `name:` frontmatter to match).
+ *   Skipped for TanStack — these skills describe the RTK/dispatch pattern.
  * - Copies hooks/scripts/ and rewrites paths in hooks.json from `${CLAUDE_PLUGIN_ROOT}/...`
  *   to `${CLAUDE_PROJECT_DIR}/.claude/...` since we're now project-local, not a plugin
  * - Merges hooks into existing `.claude/settings.json` (which already has permissions)
@@ -386,33 +399,22 @@ async function inlineToolkitInto(target: string, variant: 'rtk' | 'tanstack'): P
     }
   }
 
-  // When RTK is picked, also bundle the canonical RTK + axios + redux skills.
-  // Source skills are named rsense-<x> on disk; we strip the prefix on copy
-  // so scaffolded projects see clean names (rtk-query-api, axios-auth, …).
-  // SKILL.md `name:` frontmatter is rewritten to match.
-  // For TanStack, skip — these describe the RTK/dispatch pattern.
-  if (variant === 'rtk' && (await fs.pathExists(RSENSE_SKILLS_DIR))) {
+  // For RTK, bundle the curated RTK-pattern skills.
+  if (variant === 'rtk' && (await fs.pathExists(CLAUDE_SKILLS_DIR))) {
     const skillsDst = path.join(claudeDir, 'skills');
     await fs.ensureDir(skillsDst);
-    const skillDirs = await fs.readdir(RSENSE_SKILLS_DIR, { withFileTypes: true });
     let copied = 0;
-    for (const entry of skillDirs) {
-      if (!entry.isDirectory()) {
-        continue;
-      }
-      if (!entry.name.startsWith('rsense-')) {
-        continue;
-      }
-      const cleanName = entry.name.replace(/^rsense-/, '');
-      const src = path.join(RSENSE_SKILLS_DIR, entry.name);
+    for (const { source, target: cleanName } of RTK_BUNDLED_SKILLS) {
+      const src = path.join(CLAUDE_SKILLS_DIR, source);
+      if (!(await fs.pathExists(src))) {continue;}
       const dst = path.join(skillsDst, cleanName);
       await fs.copy(src, dst, { overwrite: true });
 
-      // Rewrite `name: rsense-<x>` → `name: <x>` in the SKILL.md frontmatter
+      // Rewrite the SKILL.md `name:` frontmatter to the cleaned target name
       const skillMd = path.join(dst, 'SKILL.md');
       if (await fs.pathExists(skillMd)) {
         const content = await fs.readFile(skillMd, 'utf8');
-        const replaced = content.replace(/^name:\s*rsense-/m, 'name: ');
+        const replaced = content.replace(/^name:\s*.+$/m, `name: ${cleanName}`);
         if (replaced !== content) {
           await fs.writeFile(skillMd, replaced, 'utf8');
         }
