@@ -9,7 +9,12 @@
     "create-rsense-bfsi-app": "./bin/create-bfsi-app.js"
   },
   "main": "./dist/index.js",
-  "files": ["bin", "dist", "templates", "README.md"],
+  "files": [
+    "bin",
+    "dist",
+    "templates",
+    "README.md"
+  ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "dev": "tsc -p tsconfig.json --watch",
@@ -17,19 +22,20 @@
     "lint:fix": "eslint src --ext .ts --fix",
     "test": "vitest run",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "clean": "rm -rf dist .tsbuildinfo"
+    "clean": "rm -rf dist .tsbuildinfo",
+    "pack:local": "node ../../scripts/pack-cli-with-templates.mjs"
   },
   "dependencies": {
-    "@clack/prompts": "catalog:",
-    "picocolors": "catalog:",
-    "fs-extra": "catalog:",
-    "commander": "catalog:",
-    "execa": "catalog:"
+    "@clack/prompts": "0.7.0",
+    "picocolors": "1.0.0",
+    "fs-extra": "11.2.0",
+    "commander": "12.0.0",
+    "execa": "9.0.2"
   },
   "devDependencies": {
     "@types/node": "20.11.30",
-    "@types/fs-extra": "catalog:",
-    "typescript": "catalog:",
-    "vitest": "catalog:"
+    "@types/fs-extra": "11.0.4",
+    "typescript": "5.4.5",
+    "vitest": "1.6.0"
   }
 }

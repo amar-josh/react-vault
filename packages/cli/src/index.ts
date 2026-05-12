@@ -32,8 +32,10 @@ export async function main(): Promise<void> {
   const projectName = await text({
     message: 'Project name?',
     placeholder: 'my-bank-app',
-    validate(value) {
-      if (!value) return 'Project name is required';
+    validate(value): string | undefined {
+      if (!value) {
+        return 'Project name is required';
+      }
       if (!/^[a-z0-9][a-z0-9-]*$/.test(value)) {
         return 'Lowercase letters, digits, and hyphens only';
       }
@@ -41,30 +43,47 @@ export async function main(): Promise<void> {
       if (fs.existsSync(target)) {
         return `Directory ${value} already exists`;
       }
+      return undefined;
     },
   });
-  if (isCancel(projectName)) return cancelled();
+  if (isCancel(projectName)) {
+    return cancelled();
+  }
 
   const variant = (await select({
     message: 'State management?',
     options: [
-      { value: 'rtk', label: 'RTK Query (Redux Toolkit)', hint: 'Recommended for complex client state' },
-      { value: 'tanstack', label: 'TanStack Query + Zustand', hint: 'Lighter; great for server-state-heavy apps' },
+      {
+        value: 'rtk',
+        label: 'RTK Query (Redux Toolkit)',
+        hint: 'Recommended for complex client state',
+      },
+      {
+        value: 'tanstack',
+        label: 'TanStack Query + Zustand',
+        hint: 'Lighter; great for server-state-heavy apps',
+      },
     ],
   })) as 'rtk' | 'tanstack';
-  if (isCancel(variant)) return cancelled();
+  if (isCancel(variant)) {
+    return cancelled();
+  }
 
   const installDeps = (await confirm({
     message: 'Install dependencies after scaffolding?',
     initialValue: true,
   })) as boolean;
-  if (isCancel(installDeps)) return cancelled();
+  if (isCancel(installDeps)) {
+    return cancelled();
+  }
 
   const initGit = (await confirm({
     message: 'Initialise git repository?',
     initialValue: true,
   })) as boolean;
-  if (isCancel(initGit)) return cancelled();
+  if (isCancel(initGit)) {
+    return cancelled();
+  }
 
   const opts: ScaffoldOptions = {
     projectName: projectName as string,
@@ -76,10 +95,12 @@ export async function main(): Promise<void> {
   await scaffold(opts);
 
   outro(
-    pc.green(`Done. ${pc.bold('cd ' + opts.projectName)} to get started.\n` +
-      `  - ${pc.cyan('pnpm dev')}    — start dev server\n` +
-      `  - ${pc.cyan('claude')}      — Claude Code with BFSI toolkit enabled\n` +
-      `  - ${pc.cyan('/bfsi-doctor')} — verify everything is wired up`),
+    pc.green(
+      `Done. ${pc.bold('cd ' + opts.projectName)} to get started.\n` +
+        `  - ${pc.cyan('pnpm dev')}    — start dev server\n` +
+        `  - ${pc.cyan('claude')}      — Claude Code with BFSI toolkit enabled\n` +
+        `  - ${pc.cyan('/bfsi-doctor')} — verify everything is wired up`,
+    ),
   );
 }
 
@@ -90,7 +111,10 @@ async function scaffold(opts: ScaffoldOptions): Promise<void> {
   // Locate templates (one level up from packages/cli during dev, or sibling in dist)
   const templatesRoot = path.resolve(__dirname, '..', '..', '..', 'templates');
   const sharedDir = path.join(templatesRoot, '_shared');
-  const variantDir = path.join(templatesRoot, opts.variant === 'rtk' ? 'rtk-query' : 'tanstack-query');
+  const variantDir = path.join(
+    templatesRoot,
+    opts.variant === 'rtk' ? 'rtk-query' : 'tanstack-query',
+  );
 
   s.start('Copying template files');
   await fs.copy(sharedDir, target, {

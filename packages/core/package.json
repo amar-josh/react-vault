@@ -42,7 +42,10 @@
       "import": "./dist/compliance/index.js"
     }
   },
-  "files": ["dist", "README.md"],
+  "files": [
+    "dist",
+    "README.md"
+  ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "dev": "tsc -p tsconfig.json --watch",
@@ -54,13 +57,13 @@
     "clean": "rm -rf dist .tsbuildinfo"
   },
   "dependencies": {
-    "axios": "catalog:",
-    "zod": "catalog:"
+    "axios": "1.6.8",
+    "zod": "3.23.6"
   },
   "devDependencies": {
     "@types/node": "20.11.30",
-    "jsdom": "catalog:",
-    "typescript": "catalog:",
-    "vitest": "catalog:"
+    "jsdom": "24.0.0",
+    "typescript": "5.4.5",
+    "vitest": "1.6.0"
   }
 }
