@@ -1,0 +1,22 @@
+{
+  "name": "@rsense/bfsi-claude-toolkit",
+  "version": "0.1.0",
+  "private": false,
+  "description": "Claude Code plugin: BFSI-aware skills, agents, hooks, and commands.",
+  "license": "UNLICENSED",
+  "files": [
+    "plugin.json",
+    "skills",
+    "agents",
+    "hooks",
+    "commands",
+    "README.md"
+  ],
+  "scripts": {
+    "lint": "echo 'no source code to lint'",
+    "test": "echo 'plugin validation via /bfsi-doctor'",
+    "typecheck": "echo 'no TS sources'",
+    "build": "echo 'plugin is distribution-ready'",
+    "validate": "node ./scripts/validate-plugin.mjs"
+  }
+}

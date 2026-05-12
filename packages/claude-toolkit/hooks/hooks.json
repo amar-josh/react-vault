@@ -1,0 +1,171 @@
+{
+  "$schema": "https://code.claude.com/schemas/hooks.json",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "if": "Bash(rm -rf *)",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/block-destructive.sh",
+            "args": [],
+            "statusMessage": "[bfsi] checking destructive shell"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "if": "Bash(git push --force *)",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/block-force-push.sh",
+            "args": [],
+            "statusMessage": "[bfsi] checking force push"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "if": "Bash(git push --force-with-lease *)",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/block-force-push.sh",
+            "args": [],
+            "statusMessage": "[bfsi] checking force push with lease"
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/protect-files.sh",
+            "args": [],
+            "statusMessage": "[bfsi] checking protected files"
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/scan-secrets.sh",
+            "args": [],
+            "statusMessage": "[bfsi] scanning for secret patterns"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/format.sh",
+            "args": [],
+            "async": true,
+            "timeout": 60,
+            "statusMessage": "[bfsi] formatting (async)"
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/lint.sh",
+            "args": [],
+            "async": true,
+            "timeout": 60,
+            "statusMessage": "[bfsi] linting (async)"
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/scan-pii.sh",
+            "args": [],
+            "statusMessage": "[bfsi] scanning for PII patterns"
+          }
+        ]
+      },
+      {
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "if": "Write(*.tsx)",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/a11y-check.sh",
+            "args": [],
+            "async": true,
+            "timeout": 120,
+            "statusMessage": "[bfsi] a11y check (async)"
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "startup|resume",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/inject-context.sh",
+            "args": [],
+            "statusMessage": "[bfsi] loading project context"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/audit-prompt.sh",
+            "args": [],
+            "async": true,
+            "timeout": 30
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/verify-clean.sh",
+            "args": [],
+            "async": true,
+            "timeout": 90,
+            "statusMessage": "[bfsi] post-turn verification (async)"
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "matcher": "auto|manual",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/save-compliance-context.sh",
+            "args": [],
+            "statusMessage": "[bfsi] snapshotting compliance context"
+          }
+        ]
+      }
+    ]
+  }
+}

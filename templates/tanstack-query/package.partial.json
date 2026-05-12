@@ -1,0 +1,8 @@
+{
+  "_comment": "Partial package.json — CLI merges this with templates/_shared/package.json. Adds TanStack Query + Zustand deps.",
+  "dependencies": {
+    "@tanstack/react-query": "5.32.1",
+    "@tanstack/react-query-devtools": "5.32.1",
+    "zustand": "4.5.2"
+  }
+}

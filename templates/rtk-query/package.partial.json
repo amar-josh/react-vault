@@ -1,0 +1,7 @@
+{
+  "_comment": "Partial package.json — CLI merges this with templates/_shared/package.json. Adds RTK Query deps.",
+  "dependencies": {
+    "@reduxjs/toolkit": "2.2.3",
+    "react-redux": "9.1.2"
+  }
+}

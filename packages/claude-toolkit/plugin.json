@@ -1,0 +1,31 @@
+{
+  "name": "bfsi-claude-toolkit",
+  "version": "0.1.0",
+  "description": "BFSI-aware skills, agents, hooks, and commands for Claude Code. Bakes in security review, PII scanning, audit logging, compliance checks, and BFSI scaffolding for every Rsense BFSI React project.",
+  "author": {
+    "name": "Rsense",
+    "url": "https://rsense.org"
+  },
+  "license": "UNLICENSED",
+  "homepage": "https://github.com/rsense/bfsi-react-starter",
+  "keywords": [
+    "bfsi",
+    "banking",
+    "fintech",
+    "claude-code",
+    "security",
+    "rbi",
+    "pci-dss",
+    "irdai",
+    "soc2"
+  ],
+  "components": {
+    "skills": "./skills",
+    "agents": "./agents",
+    "hooks": "./hooks/hooks.json",
+    "commands": "./commands"
+  },
+  "engines": {
+    "claude-code": ">=2.1.0"
+  }
+}

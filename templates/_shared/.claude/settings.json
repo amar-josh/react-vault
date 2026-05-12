@@ -1,0 +1,31 @@
+{
+  "$schema": "https://code.claude.com/schemas/settings.json",
+  "enabledPlugins": [
+    "bfsi-claude-toolkit@rsense"
+  ],
+  "permissions": {
+    "deny": [
+      "Bash(rm -rf /*)",
+      "Bash(git push --force *main*)",
+      "Bash(git push --force *master*)",
+      "Bash(git push --force *production*)",
+      "Bash(git push --force *staging*)"
+    ],
+    "allow": [
+      "Bash(pnpm:*)",
+      "Bash(npx:*)",
+      "Bash(node:*)",
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(git branch:*)",
+      "Bash(git show:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git pull:*)",
+      "Bash(git fetch:*)",
+      "Bash(gh pr:*)",
+      "Bash(gh repo:*)"
+    ]
+  }
+}
