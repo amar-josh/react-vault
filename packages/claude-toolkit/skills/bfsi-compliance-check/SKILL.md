@@ -23,7 +23,7 @@ Static compliance scan over the current branch's diff (`git diff origin/main...H
 4. **localStorage with PII** — `localStorage.setItem(..., user.pan)`, etc.
    - Pattern: `localStorage\.setItem.*\.(pan|aadhaar|account|password)`
 5. **Unencrypted IndexedDB** — direct `idb.put()` of objects containing PII fields
-   - Suggest using `secureStorage` from `@rsense/bfsi-core/storage`
+   - Suggest using `secureStorage` from `@scope/core/storage`
 6. **Missing CSRF token on mutation** — `fetch('/api/...', { method: 'POST', ... })` without `X-CSRF-Token` (if not using cookie-less JWT)
 
 ### High (fix before next sprint)
@@ -78,10 +78,12 @@ Branch: <name>  →  origin/main (N files changed)
 
 ## Critical (must fix): N findings
 1. **Hardcoded secret** in src/api/auth.ts:42
-   ```
-   const API_KEY = 'sk-abc123...'
-   ```
-   Fix: replace with `import.meta.env.VITE_API_KEY` and add to `.env.local.sample`.
+```
+
+const API_KEY = 'sk-abc123...'
+
+```
+Fix: replace with `import.meta.env.VITE_API_KEY` and add to `.env.local.sample`.
 
 ## High: N findings
 ...
@@ -96,6 +98,7 @@ Otherwise: "✅ All checks passed."
 ## Note on scope
 
 This is a **static** check based on patterns. It catches obvious issues but is not a substitute for:
+
 - `bfsi-security-reviewer` agent (which reasons about flows)
 - Backend security review
 - Penetration testing

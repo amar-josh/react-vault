@@ -24,7 +24,7 @@ This means: edit one Zod schema, and types + runtime checks update together. No 
 
 ## Why audit-wrapped mutations?
 
-Every state-changing API call must be audited for BFSI compliance (RBI Annexure I, SOC2 CC7.3). The `useAuditedMutation` hook from `@rsense/bfsi-core/audit` wraps RTK Query / TanStack Query mutations and:
+Every state-changing API call must be audited for BFSI compliance (RBI Annexure I, SOC2 CC7.3). The `useAuditedMutation` hook from `@scope/core/audit` wraps RTK Query / TanStack Query mutations and:
 
 1. Generates an event ID (UUID v4)
 2. Records: actor, action, target, timestamp, request hash
@@ -60,6 +60,7 @@ This is a default; you can opt out by editing the generated component. But by de
 Each feature gets its own i18n namespace `<feature>.*`. This keeps translation files navigable (one team can own KYC translations, another Loans) and lets us lazy-load translation chunks per route.
 
 Naming:
+
 - `<feature>.title`
 - `<feature>.list.empty`
 - `<feature>.form.fields.<fieldName>.label`

@@ -1,9 +1,9 @@
 /**
- * `create-bfsi-app` entry point.
+ * `create-app` entry point.
  *
  * Scaffolds a new BFSI React project from `templates/_shared/` + a variant overlay
  * (RTK Query or TanStack Query), inlines the Claude toolkit into the project's
- * `.claude/` directory, and optionally rewrites `@rsense/*` deps to local `link:`
+ * `.claude/` directory, and optionally rewrites `@scope/*` deps to local `link:`
  * paths so the project installs without the packages being published yet.
  */
 import {
@@ -43,7 +43,7 @@ interface ScaffoldOptions {
 
 export async function main(): Promise<void> {
   console.log();
-  intro(pc.bold(pc.bgCyan(pc.black(' @rsense/create-bfsi-app '))));
+  intro(pc.bold(pc.bgCyan(pc.black(' @scope/create-app '))));
 
   const projectName = await text({
     message: 'Project name?',
@@ -94,8 +94,7 @@ export async function main(): Promise<void> {
   }
 
   const localLink = (await confirm({
-    message:
-      'Use link: refs for @rsense/bfsi-core and @rsense/bfsi-ui? (needed until packages are published)',
+    message: 'Use link: refs for @scope/core and @scope/ui? (needed until packages are published)',
     initialValue: true,
   })) as boolean;
   if (isCancel(localLink)) {
@@ -168,14 +167,14 @@ async function scaffold(opts: ScaffoldOptions): Promise<void> {
   // 4. Substitute {{projectName}} in package.json, README.md, index.html, i18n
   await substituteVars(target, opts.projectName);
 
-  // 5. Rewrite @rsense/* deps to link: paths if local-link is on
+  // 5. Rewrite @scope/* deps to link: paths if local-link is on
   if (opts.localLink) {
     await rewriteToLinkDeps(target);
   } else {
     s.start('Skipping link rewrite');
     s.stop(
       pc.yellow(
-        'Note: pnpm install will fail until @rsense/bfsi-core and @rsense/bfsi-ui are published. Use --local-link or edit deps manually.',
+        'Note: pnpm install will fail until @scope/core and @scope/ui are published. Use --local-link or edit deps manually.',
       ),
     );
   }
@@ -210,7 +209,7 @@ async function scaffold(opts: ScaffoldOptions): Promise<void> {
         // Older git versions: master is created by init; rename may fail if no commits yet
       });
       await execa('git', ['add', '.'], { cwd: target });
-      await execa('git', ['commit', '-q', '-m', 'chore: scaffolded from @rsense/create-bfsi-app'], {
+      await execa('git', ['commit', '-q', '-m', 'chore: scaffolded from @scope/create-app'], {
         cwd: target,
       });
       // Ensure final branch is main even if rename pre-commit failed
@@ -282,11 +281,11 @@ async function rewriteToLinkDeps(target: string): Promise<void> {
   }
   const corePath = path.join(STARTER_ROOT, 'packages', 'core');
   const uiPath = path.join(STARTER_ROOT, 'packages', 'ui');
-  if (pkg.dependencies['@rsense/bfsi-core']) {
-    pkg.dependencies['@rsense/bfsi-core'] = `link:${corePath}`;
+  if (pkg.dependencies['@scope/core']) {
+    pkg.dependencies['@scope/core'] = `link:${corePath}`;
   }
-  if (pkg.dependencies['@rsense/bfsi-ui']) {
-    pkg.dependencies['@rsense/bfsi-ui'] = `link:${uiPath}`;
+  if (pkg.dependencies['@scope/ui']) {
+    pkg.dependencies['@scope/ui'] = `link:${uiPath}`;
   }
   await fs.writeJSON(pkgPath, pkg, { spaces: 2 });
 }

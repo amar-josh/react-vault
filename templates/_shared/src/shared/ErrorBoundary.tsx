@@ -1,5 +1,5 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react';
-import { generateErrorRef } from '@rsense/bfsi-core/audit';
+import { generateErrorRef } from '@scope/core/audit';
 
 interface Props {
   children: ReactNode;
@@ -41,7 +41,8 @@ export class ErrorBoundary extends Component<Props, State> {
         <main className="container mx-auto py-12">
           <h1 className="text-2xl font-semibold">Something went wrong</h1>
           <p className="mt-2 text-muted-foreground">
-            We're sorry — an unexpected error occurred. If this persists, contact support with this reference:
+            We're sorry — an unexpected error occurred. If this persists, contact support with this
+            reference:
           </p>
           <code className="mt-4 inline-block rounded bg-muted px-2 py-1 font-mono text-sm">
             {this.state.errorRef}

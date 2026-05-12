@@ -21,7 +21,7 @@ Run each check, report status (✅ / ⚠️ / ❌), and remediation for any fail
 ### Project config
 
 5. **`.claude/settings.json` exists** and enables the BFSI toolkit plugin.
-6. **`.env.local.sample` exists** with placeholders for VITE_* vars.
+6. **`.env.local.sample` exists** with placeholders for VITE\_\* vars.
 7. **`tsconfig.json`** extends `tsconfig.base.json` (or has equivalent strict settings).
 8. **`.eslintrc.cjs`** present (or `eslint.config.js`).
 9. **`.husky/pre-commit`** present and executable.
@@ -30,9 +30,10 @@ Run each check, report status (✅ / ⚠️ / ❌), and remediation for any fail
 ### Dependencies
 
 11. **Critical packages installed:**
+
     - `react`, `react-dom`
-    - `@rsense/bfsi-core` (or `bfsi-core` if not yet published)
-    - `@rsense/bfsi-ui`
+    - `@scope/core` (or link: ref to local workspace)
+    - `@scope/ui`
     - One of: `@reduxjs/toolkit` OR `@tanstack/react-query`
     - `react-hook-form`, `zod`
     - `react-router-dom`
@@ -53,7 +54,7 @@ Run each check, report status (✅ / ⚠️ / ❌), and remediation for any fail
 ### Claude toolkit
 
 18. **`/hooks` registered** — at least 8 hooks visible (run via Bash if possible; otherwise describe to user).
-19. **`/plugin` shows `bfsi-claude-toolkit` enabled.**
+19. **`/plugin` shows `toolkit` enabled.**
 20. **At least 8 skills available** — list via `ls .claude/skills` if user-level, or via `/plugin` for plugin-level.
 
 ### Security
@@ -68,18 +69,23 @@ Run each check, report status (✅ / ⚠️ / ❌), and remediation for any fail
 # /bfsi-doctor health check
 
 ## Summary
-{count_pass} ✅  {count_warn} ⚠️  {count_fail} ❌
+
+{count_pass} ✅ {count_warn} ⚠️ {count_fail} ❌
 
 ## Failures (must fix)
+
 {for each ❌, with remediation}
 
 ## Warnings (recommended fixes)
+
 {for each ⚠️, with rationale}
 
 ## All green
+
 {categories that fully passed}
 
 ## Next steps
+
 {Top 3 actions ordered by urgency}
 ```
 

@@ -7,6 +7,7 @@ Every state-changing action emits an audit event. Names follow:
 ```
 
 Examples:
+
 - `kyc.verification.submitted`
 - `kyc.verification.approved`
 - `kyc.verification.rejected`
@@ -24,18 +25,18 @@ Examples:
 
 Every event must include:
 
-| Field | Source | Notes |
-|---|---|---|
-| `event_id` | UUID v4 | Generated client-side |
-| `event_name` | string | e.g. `kyc.verification.submitted` |
-| `actor_id` | from session | User performing the action |
-| `actor_session_id` | from session | Session correlation |
-| `target_type` | string | e.g. `kyc_verification` |
-| `target_id` | string | Resource ID |
-| `timestamp` | ISO 8601 | Client clock — backend re-stamps for legal record |
-| `outcome` | `success` \| `failure` \| `pending` | Always populated |
-| `request_hash` | sha256 | Of request body, for tamper detection |
-| `client_metadata` | object | User agent, viewport — no PII |
+| Field              | Source                              | Notes                                             |
+| ------------------ | ----------------------------------- | ------------------------------------------------- |
+| `event_id`         | UUID v4                             | Generated client-side                             |
+| `event_name`       | string                              | e.g. `kyc.verification.submitted`                 |
+| `actor_id`         | from session                        | User performing the action                        |
+| `actor_session_id` | from session                        | Session correlation                               |
+| `target_type`      | string                              | e.g. `kyc_verification`                           |
+| `target_id`        | string                              | Resource ID                                       |
+| `timestamp`        | ISO 8601                            | Client clock — backend re-stamps for legal record |
+| `outcome`          | `success` \| `failure` \| `pending` | Always populated                                  |
+| `request_hash`     | sha256                              | Of request body, for tamper detection             |
+| `client_metadata`  | object                              | User agent, viewport — no PII                     |
 
 ## Reveal events
 
@@ -66,4 +67,4 @@ With metadata including the error code (but NEVER the raw error message — that
 - Full account numbers
 - Free-text user input from forms (it might contain PII)
 
-The `auditClient` in `@rsense/bfsi-core/audit` runs every payload through a PII scrubber before POST.
+The `auditClient` in `@scope/core/audit` runs every payload through a PII scrubber before POST.

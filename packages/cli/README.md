@@ -1,10 +1,11 @@
-# @rsense/create-bfsi-app
+# @scope/create-app
 
 ```bash
-npx @rsense/create-bfsi-app my-bank-app
+npx @scope/create-app my-bank-app
 ```
 
 Interactive prompts:
+
 - Project name
 - State management (RTK Query / TanStack Query)
 - Install deps automatically? (Y/n)
@@ -12,4 +13,4 @@ Interactive prompts:
 
 Scaffolds: `_shared` template + selected variant overlay → `npm install` → `git init` → first commit.
 
-The scaffolded project comes with `.claude/settings.json` enabling the `@rsense/bfsi-claude-toolkit` plugin — Claude Code is BFSI-aware from the first session.
+The scaffolded project comes with `.claude/settings.json` enabling the `@scope/toolkit` plugin — Claude Code is BFSI-aware from the first session.

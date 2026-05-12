@@ -1,6 +1,6 @@
 # {{projectName}}
 
-BFSI React app scaffolded from `@rsense/create-bfsi-app`.
+BFSI React app scaffolded from `@scope/create-app`.
 
 ## Quick start
 

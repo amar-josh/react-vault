@@ -1,12 +1,12 @@
 {
-  "name": "@rsense/create-bfsi-app",
+  "name": "@scope/create-app",
   "version": "0.1.0",
-  "description": "Scaffold a new Rsense BFSI React project. Pick a state-management variant (RTK Query or TanStack Query) and get a production-ready starter with security, audit, encryption, and Claude Code companion baked in.",
+  "description": "Scaffold a new Your Org BFSI React project. Pick a state-management variant (RTK Query or TanStack Query) and get a production-ready starter with security, audit, encryption, and Claude Code companion baked in.",
   "license": "UNLICENSED",
   "type": "module",
   "bin": {
-    "create-bfsi-app": "./bin/create-bfsi-app.js",
-    "create-rsense-bfsi-app": "./bin/create-bfsi-app.js"
+    "create-app": "./bin/create-app.js",
+    "create-scoped-app": "./bin/create-app.js"
   },
   "main": "./dist/index.js",
   "files": [

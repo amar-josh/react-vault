@@ -1,10 +1,10 @@
-# @rsense/bfsi-ui
+# @scope/ui
 
 React component library on top of Tailwind CSS + shadcn/ui, with BFSI-specific compositions.
 
 ```tsx
-import { PIIMaskedDisplay, CurrencyDisplay, DateTimeDisplay, cn } from '@rsense/bfsi-ui';
-import { tokens } from '@rsense/bfsi-ui/theme';
+import { PIIMaskedDisplay, CurrencyDisplay, DateTimeDisplay, cn } from '@scope/ui';
+import { tokens } from '@scope/ui/theme';
 
 // PII masking with click-to-reveal + audit hook
 <PIIMaskedDisplay

@@ -10,10 +10,11 @@
 ## Scaffold a new BFSI project
 
 ```bash
-npx @rsense/create-bfsi-app my-bank-app
+npx @scope/create-app my-bank-app
 ```
 
 Interactive prompts ask for:
+
 1. **Project name** — lowercase + hyphens
 2. **State management** — RTK Query (recommended for complex apps) or TanStack Query (lighter)
 3. **Install dependencies?** — runs `pnpm install`
@@ -66,7 +67,7 @@ This starter itself is a pnpm + Turborepo monorepo:
 
 ```bash
 git clone <starter-repo>
-cd bfsi-react-starter
+cd react-starter
 pnpm install
 pnpm build      # turbo build all packages
 pnpm test       # turbo test all packages
@@ -76,9 +77,9 @@ pnpm lint       # turbo lint
 To work on the CLI / core / UI:
 
 ```bash
-pnpm --filter @rsense/bfsi-core test:watch
-pnpm --filter @rsense/bfsi-ui dev
-pnpm --filter @rsense/create-bfsi-app dev
+pnpm --filter @scope/core test:watch
+pnpm --filter @scope/ui dev
+pnpm --filter @scope/create-app dev
 ```
 
 ## What's next

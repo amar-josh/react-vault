@@ -1,5 +1,5 @@
 {
-  "name": "@rsense/bfsi-claude-toolkit",
+  "name": "@scope/toolkit",
   "version": "0.1.0",
   "private": false,
   "description": "Claude Code plugin: BFSI-aware skills, agents, hooks, and commands.",

@@ -1,6 +1,6 @@
-# @rsense/bfsi-claude-toolkit
+# @scope/toolkit
 
-A Claude Code plugin that makes Claude **BFSI-aware** for every Rsense BFSI React project. It ships skills for scaffolding, hooks that enforce security policy, agents that review PRs, and commands that orchestrate the lot.
+A Claude Code plugin that makes Claude **BFSI-aware** for every Your Org BFSI React project. It ships skills for scaffolding, hooks that enforce security policy, agents that review PRs, and commands that orchestrate the lot.
 
 Built per the official [Claude Code spec](https://code.claude.com/docs/) — skill directories in kebab-case, exact `SKILL.md` filename, YAML frontmatter with WHAT + WHEN descriptions, progressive disclosure, `${CLAUDE_PLUGIN_ROOT}` path resolution, exit code 2 to block, JSON for structured hook decisions.
 
@@ -9,7 +9,7 @@ Built per the official [Claude Code spec](https://code.claude.com/docs/) — ski
 ## What's inside
 
 ```
-bfsi-claude-toolkit/
+toolkit/
 ├── plugin.json                  Plugin manifest
 ├── skills/                      15 skills (action + reference)
 │   ├── bfsi-feature/SKILL.md
@@ -40,41 +40,41 @@ bfsi-claude-toolkit/
 
 ## Skills
 
-| Skill | Style | Purpose |
-|---|---|---|
-| `bfsi-feature` | action | Scaffold feature module (api + containers + components + routes + tests + i18n) |
-| `bfsi-api-endpoint` | action | Add API endpoint — variant-aware (RTK Query OR TanStack) |
-| `bfsi-form` | action | RHF + Zod form with BFSI defaults |
-| `bfsi-pii-field` | action | Wrap field with `<PIIMaskedDisplay>` + audit |
-| `bfsi-protected-route` | action | Add route with `<ProtectedRoute>` + `<CanAccess>` |
-| `bfsi-audit-action` | action | Wrap button/action with audit log + MFA slot |
-| `bfsi-encrypt-helper` | reference | Web Crypto usage patterns |
-| `bfsi-confirm-modal` | action | Confirmation modal with optional MFA |
-| `bfsi-data-table` | action | Access-controlled table |
-| `bfsi-i18n-key` | action | Add i18n key across locales |
-| `bfsi-compliance-check` | action | OWASP + RBI + PCI checklist on diff |
-| `bfsi-commit` | action | Audit-friendly Conventional Commits |
-| `bfsi-onboarding` | reference | New-dev orientation (auto-loads) |
-| `bfsi-test-pattern` | reference | BFSI testing patterns |
-| `bfsi-error-message` | reference | Safe error message patterns |
+| Skill                   | Style     | Purpose                                                                         |
+| ----------------------- | --------- | ------------------------------------------------------------------------------- |
+| `bfsi-feature`          | action    | Scaffold feature module (api + containers + components + routes + tests + i18n) |
+| `bfsi-api-endpoint`     | action    | Add API endpoint — variant-aware (RTK Query OR TanStack)                        |
+| `bfsi-form`             | action    | RHF + Zod form with BFSI defaults                                               |
+| `bfsi-pii-field`        | action    | Wrap field with `<PIIMaskedDisplay>` + audit                                    |
+| `bfsi-protected-route`  | action    | Add route with `<ProtectedRoute>` + `<CanAccess>`                               |
+| `bfsi-audit-action`     | action    | Wrap button/action with audit log + MFA slot                                    |
+| `bfsi-encrypt-helper`   | reference | Web Crypto usage patterns                                                       |
+| `bfsi-confirm-modal`    | action    | Confirmation modal with optional MFA                                            |
+| `bfsi-data-table`       | action    | Access-controlled table                                                         |
+| `bfsi-i18n-key`         | action    | Add i18n key across locales                                                     |
+| `bfsi-compliance-check` | action    | OWASP + RBI + PCI checklist on diff                                             |
+| `bfsi-commit`           | action    | Audit-friendly Conventional Commits                                             |
+| `bfsi-onboarding`       | reference | New-dev orientation (auto-loads)                                                |
+| `bfsi-test-pattern`     | reference | BFSI testing patterns                                                           |
+| `bfsi-error-message`    | reference | Safe error message patterns                                                     |
 
 **Action** skills set `disable-model-invocation: true` — invoke with `/bfsi-foo`.
 **Reference** skills auto-load when their description matches the user's request.
 
 ## Agents
 
-| Agent | Model | Role |
-|---|---|---|
-| `bfsi-security-reviewer` | opus | OWASP Top 10 + BFSI PR review |
-| `bfsi-architect` | opus | Designs new features per BFSI patterns |
-| `bfsi-code-reviewer` | opus | General code review with BFSI awareness |
-| `bfsi-test-writer` | sonnet | Security-aware tests |
-| `bfsi-accessibility-auditor` | sonnet | WCAG 2.1 AA audit |
-| `bfsi-compliance-auditor` | opus | RBI / PCI / IRDAI / SOC2 audit |
-| `bfsi-performance-reviewer` | sonnet | Perf for tables, real-time data |
-| `bfsi-planner` | opus | User story → impl plan |
-| `bfsi-pii-scanner` | sonnet | Scans for accidental PII exposure |
-| `bfsi-pr-reviewer` | opus | Orchestrator |
+| Agent                        | Model  | Role                                    |
+| ---------------------------- | ------ | --------------------------------------- |
+| `bfsi-security-reviewer`     | opus   | OWASP Top 10 + BFSI PR review           |
+| `bfsi-architect`             | opus   | Designs new features per BFSI patterns  |
+| `bfsi-code-reviewer`         | opus   | General code review with BFSI awareness |
+| `bfsi-test-writer`           | sonnet | Security-aware tests                    |
+| `bfsi-accessibility-auditor` | sonnet | WCAG 2.1 AA audit                       |
+| `bfsi-compliance-auditor`    | opus   | RBI / PCI / IRDAI / SOC2 audit          |
+| `bfsi-performance-reviewer`  | sonnet | Perf for tables, real-time data         |
+| `bfsi-planner`               | opus   | User story → impl plan                  |
+| `bfsi-pii-scanner`           | sonnet | Scans for accidental PII exposure       |
+| `bfsi-pr-reviewer`           | opus   | Orchestrator                            |
 
 ## Hooks
 
@@ -88,12 +88,12 @@ bfsi-claude-toolkit/
 
 ## Commands
 
-| Command | Action |
-|---|---|
-| `/bfsi-review` | Spawn security + a11y + perf + test-coverage agents in parallel |
-| `/bfsi-scaffold` | Interactive feature scaffolding |
-| `/bfsi-audit` | Compliance audit (RBI / PCI / IRDAI / SOC2) |
-| `/bfsi-doctor` | Health-check: env vars, deps, `.claude` config, hook registration |
+| Command          | Action                                                            |
+| ---------------- | ----------------------------------------------------------------- |
+| `/bfsi-review`   | Spawn security + a11y + perf + test-coverage agents in parallel   |
+| `/bfsi-scaffold` | Interactive feature scaffolding                                   |
+| `/bfsi-audit`    | Compliance audit (RBI / PCI / IRDAI / SOC2)                       |
+| `/bfsi-doctor`   | Health-check: env vars, deps, `.claude` config, hook registration |
 
 ---
 
@@ -104,7 +104,7 @@ Scaffolded projects' `.claude/settings.json` enables this plugin. From inside th
 ```bash
 claude              # session starts; SessionStart hook injects context
 # /hooks            # verify all 12 hooks registered
-# /plugin           # verify bfsi-claude-toolkit enabled
+# /plugin           # verify toolkit enabled
 # /bfsi-doctor      # full health-check
 ```
 
@@ -115,7 +115,7 @@ claude              # session starts; SessionStart hook injects context
 ```bash
 # Link this plugin into a local Claude config for testing
 mkdir -p ~/.claude/plugins
-ln -s "$(pwd)" ~/.claude/plugins/bfsi-claude-toolkit
+ln -s "$(pwd)" ~/.claude/plugins/toolkit
 # Then enable via /plugin in any Claude Code session
 ```
 

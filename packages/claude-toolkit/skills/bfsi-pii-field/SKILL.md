@@ -1,6 +1,6 @@
 ---
 name: bfsi-pii-field
-description: Wraps a data field with PII masking (click-to-reveal + audit log) using PIIMaskedDisplay from @rsense/bfsi-ui. Use when the user types /bfsi-pii-field, asks to "mask this PAN", "hide the account number", "add masking to Aadhaar", or "make this field a PII field".
+description: Wraps a data field with PII masking (click-to-reveal + audit log) using PIIMaskedDisplay from @scope/ui. Use when the user types /bfsi-pii-field, asks to "mask this PAN", "hide the account number", "add masking to Aadhaar", or "make this field a PII field".
 disable-model-invocation: true
 argument-hint: <field-type> <variable-or-prop>
 allowed-tools: Read Edit Grep
@@ -8,21 +8,21 @@ allowed-tools: Read Edit Grep
 
 # BFSI PII Field
 
-Wraps a value display with `<PIIMaskedDisplay type="pan" value={...} />` from `@rsense/bfsi-ui`.
+Wraps a value display with `<PIIMaskedDisplay type="pan" value={...} />` from `@scope/ui`.
 
 ## Supported types
 
-| Type | Default mask | Reveal duration |
-|---|---|---|
-| `pan` | `ABCDE****F` | 30s |
-| `aadhaar` | `XXXX XXXX 1234` | 15s |
-| `account_number` | `****1234` | 30s |
-| `mobile` | `+91 ******1234` | 30s |
-| `email` | `j***@example.com` | 30s |
-| `card_last4` | `**** 1234` | 60s |
-| `name` | initials only | 60s |
-| `address` | first line + `…` | 60s |
-| `dob` | masked, age shown | never |
+| Type             | Default mask       | Reveal duration |
+| ---------------- | ------------------ | --------------- |
+| `pan`            | `ABCDE****F`       | 30s             |
+| `aadhaar`        | `XXXX XXXX 1234`   | 15s             |
+| `account_number` | `****1234`         | 30s             |
+| `mobile`         | `+91 ******1234`   | 30s             |
+| `email`          | `j***@example.com` | 30s             |
+| `card_last4`     | `**** 1234`        | 60s             |
+| `name`           | initials only      | 60s             |
+| `address`        | first line + `…`   | 60s             |
+| `dob`            | masked, age shown  | never           |
 
 ## What it does
 
@@ -36,11 +36,7 @@ Replaces it with:
 
 ```tsx
 <td>
-  <PIIMaskedDisplay
-    type="pan"
-    value={user.pan}
-    auditTarget={{ type: 'user', id: user.id }}
-  />
+  <PIIMaskedDisplay type="pan" value={user.pan} auditTarget={{ type: 'user', id: user.id }} />
 </td>
 ```
 
@@ -48,7 +44,7 @@ This adds:
 
 1. **Click-to-reveal** with audit log entry (`data.pan.revealed`)
 2. **Auto re-mask** after the type-specific duration
-3. **Copy guard** — copying the masked text returns "****" not the value
+3. **Copy guard** — copying the masked text returns "\*\*\*\*" not the value
 4. **a11y** — `aria-label="masked PAN, click to reveal"`, screen-reader-friendly
 
 ## Workflow
@@ -60,6 +56,7 @@ If the user gives a variable like `user.pan`, find the occurrences in the curren
 ### Step 2: Determine the type
 
 If not provided, infer from the variable name:
+
 - contains `pan` → `pan`
 - contains `aadhaar` / `uid` → `aadhaar`
 - contains `account` / `acc_no` → `account_number`
@@ -71,6 +68,7 @@ If not provided, infer from the variable name:
 ### Step 3: Determine the audit target
 
 The `auditTarget` prop tells the audit log which resource the field belongs to. Infer from context:
+
 - If the variable is `user.pan`, target = `{ type: 'user', id: user.id }`
 - If it's `kycRecord.aadhaar`, target = `{ type: 'kyc_record', id: kycRecord.id }`
 - Otherwise, ask the user.
@@ -78,7 +76,7 @@ The `auditTarget` prop tells the audit log which resource the field belongs to. 
 ### Step 4: Add the import (if missing)
 
 ```tsx
-import { PIIMaskedDisplay } from '@rsense/bfsi-ui';
+import { PIIMaskedDisplay } from '@scope/ui';
 ```
 
 ### Step 5: Replace + verify

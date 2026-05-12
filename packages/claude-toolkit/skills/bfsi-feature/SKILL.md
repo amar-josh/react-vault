@@ -8,7 +8,7 @@ allowed-tools: Read Write Edit Glob Grep Bash(mkdir:*) Bash(node:*)
 
 # BFSI Feature Scaffold
 
-Generates a complete feature module under `src/features/<FeatureName>/` following the Rsense BFSI architecture: container-component split, RTK Query / TanStack Query API layer, Zod validation, audit-wrapped mutations, accessible UI, i18n keys.
+Generates a complete feature module under `src/features/<FeatureName>/` following the Your Org BFSI architecture: container-component split, RTK Query / TanStack Query API layer, Zod validation, audit-wrapped mutations, accessible UI, i18n keys.
 
 ## Arguments
 
@@ -44,6 +44,7 @@ src/features/<FeatureName>/
 ```
 
 Plus updates to:
+
 - `src/routes/index.tsx` — registers the new feature routes
 - `src/i18n/translations/en.json` — adds `<feature>.*` namespace
 - `src/i18n/translations/hi.json` — placeholder keys (translator fills in)
@@ -53,6 +54,7 @@ Plus updates to:
 ### Step 1: Validate inputs
 
 Confirm:
+
 - `$0` is PascalCase (regex `^[A-Z][A-Za-z0-9]+$`).
 - The feature directory does NOT already exist.
 - A `package.json` exists at the project root.
@@ -71,6 +73,7 @@ The script writes all files using the templates in `references/templates/`.
 ### Step 3: Verify
 
 After generation:
+
 1. Run `pnpm typecheck` and report any errors.
 2. Run `pnpm lint` on the new files only.
 3. Read the generated `routes.tsx` and confirm it's registered.
@@ -78,6 +81,7 @@ After generation:
 ### Step 4: Summarise
 
 Output a short summary to the user:
+
 - N files created
 - Routes registered: `/<feature>` and `/<feature>/:id`
 - Next step suggestion: "Run `pnpm dev` and visit /<feature> to see the empty list. Then add fields to `schema.ts`."
@@ -89,7 +93,7 @@ Output a short summary to the user:
 - **Sensitive fields get `<PIIMaskedDisplay>` wrappers** by default if their names match `/^(pan|aadhaar|account|mobile|email|dob)$/i`.
 - **All mutations go through `useAuditedMutation`** which logs the action.
 - **All routes are `<ProtectedRoute>`** with an explicit `permission` prop.
-- **All forms use `useFormWithZod`** (from `@rsense/bfsi-ui`) for consistent validation display.
+- **All forms use `useFormWithZod`** (from `@scope/ui`) for consistent validation display.
 
 ## Examples
 

@@ -5,19 +5,19 @@ The why behind the structure.
 ## Goals
 
 1. **Codify org-wide BFSI security once, not per-project.** Encryption, audit, PII handling, auth — these are decided once in this starter and inherited by every new project.
-2. **Two state-management variants, one source of truth.** RTK Query and TanStack Query share `_shared` template and `@rsense/bfsi-core` / `@rsense/bfsi-ui` packages. Only the data-layer overlay differs.
+2. **Two state-management variants, one source of truth.** RTK Query and TanStack Query share `_shared` template and `@scope/core` / `@scope/ui` packages. Only the data-layer overlay differs.
 3. **Make Claude Code an effective BFSI developer.** Skills, agents, and hooks codify our conventions so Claude follows them by default — not because each dev reminds it.
-4. **No reinvention per project.** When a regulation changes (RBI Annexure I updates), we patch `@rsense/bfsi-core` once and bump the version in every dependent app.
+4. **No reinvention per project.** When a regulation changes (RBI Annexure I updates), we patch `@scope/core` once and bump the version in every dependent app.
 
 ## Top-level shape
 
 ```
-bfsi-react-starter/                  Monorepo: pnpm + Turborepo
+react-starter/                  Monorepo: pnpm + Turborepo
 ├── packages/
-│   ├── cli/                         create-bfsi-app (npx scaffolder)
-│   ├── core/                        bfsi-core: framework-agnostic security
-│   ├── ui/                          bfsi-ui: Tailwind + shadcn + BFSI compositions
-│   └── claude-toolkit/              bfsi-claude-toolkit: Claude Code plugin
+│   ├── cli/                         create-app (npx scaffolder)
+│   ├── core/                        @scope/core: framework-agnostic security
+│   ├── ui/                          @scope/ui: Tailwind + shadcn + BFSI compositions
+│   └── claude-toolkit/              toolkit: Claude Code plugin
 └── templates/
     ├── _shared/                     Common files (Vite config, CI, i18n, ErrorBoundary…)
     ├── rtk-query/                   Overlay with @reduxjs/toolkit
@@ -93,6 +93,7 @@ Failure modes:
 **Components** (`src/features/<Feature>/components/`) are pure: receive props, render UI, emit events. No `useFetch`, no `useDispatch`.
 
 This split:
+
 - Makes security review easier (security looks at containers only)
 - Makes components testable in isolation
 - Allows the same component to render under different containers (customer vs admin)

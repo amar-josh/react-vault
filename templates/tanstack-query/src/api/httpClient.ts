@@ -2,7 +2,7 @@
  * Plain axios client (not RTK Query). TanStack Query hooks call this via
  * createQuery / createMutation factories.
  */
-import { createAxios } from '@rsense/bfsi-core/http';
+import { createAxios } from '@scope/core/http';
 import { env } from '../env.js';
 
 export const http = createAxios({

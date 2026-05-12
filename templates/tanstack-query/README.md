@@ -6,7 +6,7 @@ Overlay applied on top of `templates/_shared/` when the user picks **TanStack Qu
 
 - `@tanstack/react-query` + `@tanstack/react-query-devtools` + `zustand` dependencies
 - `src/api/queryClient.ts` — pre-configured `QueryClient` with BFSI-friendly defaults
-- `src/api/httpClient.ts` — axios instance from `@rsense/bfsi-core/http`
+- `src/api/httpClient.ts` — axios instance from `@scope/core/http`
 
 ## Feature pattern
 

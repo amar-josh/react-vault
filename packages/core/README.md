@@ -1,15 +1,15 @@
-# @rsense/bfsi-core
+# @scope/core
 
 Framework-agnostic BFSI security primitives. The "core" package every BFSI React project depends on.
 
 ```ts
-import { aesgcm } from '@rsense/bfsi-core/encryption';
-import { maskPan, isValidPan } from '@rsense/bfsi-core/pii';
-import { AuditClient, generateEventId } from '@rsense/bfsi-core/audit';
-import { createAxios, ApiError } from '@rsense/bfsi-core/http';
-import { TokenManager, IdleTimer, CrossTabSync } from '@rsense/bfsi-core/auth';
-import { put, get } from '@rsense/bfsi-core/storage';
-import { generateCspNonce, buildCsp, toSafeView } from '@rsense/bfsi-core/compliance';
+import { aesgcm } from '@scope/core/encryption';
+import { maskPan, isValidPan } from '@scope/core/pii';
+import { AuditClient, generateEventId } from '@scope/core/audit';
+import { createAxios, ApiError } from '@scope/core/http';
+import { TokenManager, IdleTimer, CrossTabSync } from '@scope/core/auth';
+import { put, get } from '@scope/core/storage';
+import { generateCspNonce, buildCsp, toSafeView } from '@scope/core/compliance';
 ```
 
 ## Modules
@@ -24,7 +24,7 @@ import { generateCspNonce, buildCsp, toSafeView } from '@rsense/bfsi-core/compli
 
 ## Conventions
 
-- **No React dependency.** This is the core. UI lives in `@rsense/bfsi-ui`.
+- **No React dependency.** This is the core. UI lives in `@scope/ui`.
 - **All public APIs are typed.** No `any`.
 - **Errors are typed (`ApiError`).** App code matches on `kind`, not strings.
 - **PII never logged.** All logging paths route through the scrubber.

@@ -1,9 +1,9 @@
 /**
- * @rsense/bfsi-core — barrel export.
+ * @scope/core — barrel export.
  *
  * Prefer importing from sub-paths for tree-shaking:
- *   import { aesgcm } from '@rsense/bfsi-core/encryption';
- *   import { maskPan } from '@rsense/bfsi-core/pii';
+ *   import { aesgcm } from '@scope/core/encryption';
+ *   import { maskPan } from '@scope/core/pii';
  *
  * Only re-exports for convenience.
  */

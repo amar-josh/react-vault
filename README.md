@@ -1,6 +1,6 @@
-# @rsense/bfsi-react-starter
+# @scope/react-starter
 
-Canonical React starter for **BFSI** (Banking / Financial Services / Insurance) projects at Rsense.
+Canonical React starter for **BFSI** (Banking / Financial Services / Insurance) projects at Your Org.
 
 Every new BFSI app scaffolds from this. It bakes in the security, auth, audit, encryption, accessibility, and Claude Code companion tooling that every project needs — so you don't re-decide them.
 
@@ -13,7 +13,7 @@ Run one command and you have a production-ready React app with:
 - **React 18 + Vite 5 + TypeScript (strict)** — fast dev loop, modern bundling
 - **Tailwind CSS + shadcn/ui** — accessible primitives, components owned in-repo
 - **React Hook Form + Zod** — type-inferred forms with runtime validation
-- **Choice of state-mgmt**: RTK Query *or* TanStack Query — pick at scaffold time
+- **Choice of state-mgmt**: RTK Query _or_ TanStack Query — pick at scaffold time
 - **Backend-agnostic REST** — configurable axios interceptors, no Rails assumptions
 - **BFSI security primitives** — encryption (Web Crypto), PII masking, audit logging, secure storage, idle timeout, cross-tab session sync, CSP, safe error boundaries
 - **Accessibility** — eslint-plugin-jsx-a11y, axe-core dev hook, WCAG 2.1 AA target
@@ -27,7 +27,7 @@ Run one command and you have a production-ready React app with:
 ## Quick start (using the starter)
 
 ```bash
-npx @rsense/create-bfsi-app my-bank-app
+npx @scope/create-app my-bank-app
 ```
 
 Interactive prompts:
@@ -52,13 +52,13 @@ claude            # Claude Code session, with BFSI toolkit auto-enabled
 ## Repo layout (this monorepo)
 
 ```
-@rsense/bfsi-react-starter/
+@scope/react-starter/
 ├── docs/                              Docusaurus site (getting started, compliance)
 ├── packages/
-│   ├── cli/                           @rsense/create-bfsi-app — the npx command
-│   ├── core/                          @rsense/bfsi-core — security/auth/audit/encryption/utils
-│   ├── ui/                            @rsense/bfsi-ui — Tailwind + shadcn + BFSI components
-│   └── claude-toolkit/                @rsense/bfsi-claude-toolkit — Claude Code plugin
+│   ├── cli/                           @scope/create-app — the npx command
+│   ├── core/                          @scope/core — security/auth/audit/encryption/utils
+│   ├── ui/                            @scope/ui — Tailwind + shadcn + BFSI components
+│   └── claude-toolkit/                @scope/toolkit — Claude Code plugin
 ├── templates/
 │   ├── _shared/                       common to both variants
 │   ├── rtk-query/                     RTK Query overlay
@@ -83,8 +83,8 @@ pnpm typecheck            # tsc --noEmit across all
 pnpm format               # prettier write
 
 # Run a script in one package
-pnpm --filter @rsense/bfsi-core build
-pnpm --filter @rsense/bfsi-claude-toolkit lint
+pnpm --filter @scope/core build
+pnpm --filter @scope/toolkit lint
 ```
 
 ---
@@ -104,14 +104,14 @@ See [`docs/compliance.md`](./docs/compliance.md) for the full checklist mapping.
 
 ## Claude Code companion
 
-Every scaffolded project ships with `@rsense/bfsi-claude-toolkit` enabled — a Claude Code plugin containing:
+Every scaffolded project ships with `@scope/toolkit` enabled — a Claude Code plugin containing:
 
-| Component | Count | Examples |
-|-----------|-------|----------|
-| Skills    | 15    | `bfsi-feature`, `bfsi-form`, `bfsi-pii-field`, `bfsi-compliance-check` |
+| Component | Count | Examples                                                                 |
+| --------- | ----- | ------------------------------------------------------------------------ |
+| Skills    | 15    | `bfsi-feature`, `bfsi-form`, `bfsi-pii-field`, `bfsi-compliance-check`   |
 | Agents    | 10    | `bfsi-security-reviewer`, `bfsi-architect`, `bfsi-accessibility-auditor` |
-| Hooks     | 12    | secret scanner, PII scanner, format on save, force-push guard |
-| Commands  | 4     | `/bfsi-review`, `/bfsi-scaffold`, `/bfsi-audit`, `/bfsi-doctor` |
+| Hooks     | 12    | secret scanner, PII scanner, format on save, force-push guard            |
+| Commands  | 4     | `/bfsi-review`, `/bfsi-scaffold`, `/bfsi-audit`, `/bfsi-doctor`          |
 
 All follow the official [Claude Code spec](https://code.claude.com/docs/) — kebab-case skill folders, exact `SKILL.md` filename, YAML frontmatter with WHAT + WHEN descriptions, progressive disclosure, exit-code 2 to block, `${CLAUDE_PLUGIN_ROOT}` path resolution.
 
@@ -127,10 +127,10 @@ See [`packages/claude-toolkit/README.md`](./packages/claude-toolkit/README.md) f
 
 ## Contributing
 
-Internal-only. PRs go through `@rsense/bfsi-pr-reviewer` agent + human review. See [`docs/contributing.md`](./docs/contributing.md).
+Internal-only. PRs go through `bfsi-pr-reviewer` agent + human review. See [`docs/contributing.md`](./docs/contributing.md).
 
 ---
 
 ## Licence
 
-UNLICENSED — proprietary to Rsense. See [`LICENSE`](./LICENSE).
+UNLICENSED — proprietary to Your Org. See [`LICENSE`](./LICENSE).

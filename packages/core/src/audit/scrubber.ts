@@ -19,16 +19,16 @@ const SENSITIVE_KEY_PATTERNS = [
   /^aadhar$/i,
   /^account(_?number)?$/i,
   /^card(_?number)?$/i,
-  /^cvv|cvc$/i,
+  /^(cvv|cvc)$/i,
   /^otp$/i,
-  /^password|passwd$/i,
+  /^(password|passwd)$/i,
   /^secret$/i,
   /^token$/i,
   /^api(_?key)?$/i,
-  /^mobile|phone$/i,
+  /^(mobile|phone)$/i,
   /^email$/i,
-  /^dob$|date_of_birth/i,
-  /^first_?name|last_?name|full_?name$/i,
+  /^(dob|date_of_birth)$/i,
+  /^(first_?name|last_?name|full_?name|name)$/i,
   /^address$/i,
   /^ifsc$/i,
   /^upi(_?(id|vpa))?$/i,
@@ -63,9 +63,9 @@ export function scrub(value: unknown, opts: ScrubOptions = {}): unknown {
 }
 
 function walk(value: unknown, depth: number, maxDepth: number, extra: RegExp[]): unknown {
-  if (depth > maxDepth) return REDACTED;
-  if (value === null || value === undefined) return value;
-  if (typeof value === 'string') return scrubString(value, extra);
+  if (depth > maxDepth) {return REDACTED;}
+  if (value === null || value === undefined) {return value;}
+  if (typeof value === 'string') {return scrubString(value, extra);}
   if (typeof value === 'number' || typeof value === 'boolean' || typeof value === 'bigint') {
     return value;
   }
@@ -92,10 +92,10 @@ function isSensitiveKey(key: string): boolean {
 
 function scrubString(value: string, extra: RegExp[]): string {
   for (const p of VALUE_PATTERNS) {
-    if (p.test(value)) return REDACTED;
+    if (p.test(value)) {return REDACTED;}
   }
   for (const p of extra) {
-    if (p.test(value)) return REDACTED;
+    if (p.test(value)) {return REDACTED;}
   }
   return value;
 }

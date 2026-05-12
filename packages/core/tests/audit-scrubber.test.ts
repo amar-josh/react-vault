@@ -55,8 +55,8 @@ describe('audit scrubber', () => {
 
   it('honours additional patterns', () => {
     const result = scrub(
-      { note: 'rsense-internal-token-XYZ' },
-      { additionalPatterns: [/rsense-internal/] },
+      { note: 'org-internal-token-XYZ' },
+      { additionalPatterns: [/org-internal/] },
     );
     expect((result as Record<string, unknown>).note).toBe('<scrubbed>');
   });

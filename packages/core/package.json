@@ -1,5 +1,5 @@
 {
-  "name": "@rsense/bfsi-core",
+  "name": "@scope/core",
   "version": "0.1.0",
   "description": "Core BFSI security primitives: encryption, PII masking, audit logging, secure storage, auth, axios factory. Framework-agnostic.",
   "license": "UNLICENSED",

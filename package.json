@@ -1,5 +1,5 @@
 {
-  "name": "@rsense/bfsi-react-starter",
+  "name": "@scope/react-starter",
   "version": "0.1.0",
   "private": true,
   "description": "Canonical BFSI React starter monorepo for the organisation. Ships a CLI generator, security/UI primitives, and a Claude Code companion toolkit.",
@@ -30,6 +30,8 @@
     "@typescript-eslint/parser": "7.8.0",
     "eslint": "8.57.0",
     "eslint-config-prettier": "9.1.0",
+    "eslint-plugin-react": "7.34.1",
+    "eslint-plugin-react-hooks": "4.6.2",
     "husky": "9.0.11",
     "lint-staged": "15.2.2",
     "prettier": "3.2.5",

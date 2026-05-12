@@ -11,10 +11,10 @@ Reference for what's safe to show users, log to console, and send to telemetry.
 
 Every error has three audiences:
 
-| Tier | Audience | What they should see |
-|---|---|---|
-| **UI** | End user | Friendly, actionable, generic. NO technical detail. |
-| **Logs** | Developers | Full technical detail, structured. PII scrubbed. |
+| Tier          | Audience         | What they should see                                       |
+| ------------- | ---------------- | ---------------------------------------------------------- |
+| **UI**        | End user         | Friendly, actionable, generic. NO technical detail.        |
+| **Logs**      | Developers       | Full technical detail, structured. PII scrubbed.           |
 | **Telemetry** | Sentry / Datadog | Anonymised stack + breadcrumbs. NO PII, NO request bodies. |
 
 A single error gives different content to each tier.
@@ -43,7 +43,7 @@ A single error gives different content to each tier.
 Generate a short alphanumeric code (e.g. `ERR-A7K2`) that maps to the full error in logs. The user reads this to support; support looks it up. The user sees ONLY the code, never the underlying ID or message.
 
 ```ts
-import { generateErrorRef, recordError } from '@rsense/bfsi-core/audit';
+import { generateErrorRef, recordError } from '@scope/core/audit';
 
 try {
   // ...
@@ -95,7 +95,8 @@ Sentry.init({
 });
 ```
 
-`scrubSentryEvent` (from `@rsense/bfsi-core/observability`) walks the event and:
+`scrubSentryEvent` (from `@scope/core/observability`) walks the event and:
+
 - Removes `request.data` (request body)
 - Removes URL query params matching PII patterns
 - Replaces values in `extra` / `tags` / `user` that match PII patterns with `<scrubbed>`
@@ -106,12 +107,12 @@ Sentry.init({
 Set the bare minimum:
 
 ```ts
-Sentry.setUser({ id: user.id });  // ID only — NEVER email, name, mobile
+Sentry.setUser({ id: user.id }); // ID only — NEVER email, name, mobile
 ```
 
 ## Error boundary
 
-Wrap every route in `<BFSIErrorBoundary>` (from `@rsense/bfsi-ui`). It:
+Wrap every route in `<BFSIErrorBoundary>` (from `@scope/ui`). It:
 
 1. Catches the error
 2. Generates a ref code
@@ -136,7 +137,7 @@ Validation errors are NOT exceptions — they're expected user input. These can 
 - ✅ "Amount must be at least ₹100"
 - ✅ "Mobile number must start with 6, 7, 8, or 9"
 
-These come from Zod's `.message()` and are user-facing on purpose. Just keep them generic — don't include the *value* the user typed back into the error.
+These come from Zod's `.message()` and are user-facing on purpose. Just keep them generic — don't include the _value_ the user typed back into the error.
 
 ## Edge cases
 

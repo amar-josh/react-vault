@@ -24,11 +24,16 @@ function Landing(): JSX.Element {
     <main className="container mx-auto py-12">
       <h1 className="text-3xl font-bold tracking-tight">{`{{projectName}}`}</h1>
       <p className="mt-2 text-muted-foreground">
-        Scaffolded from @rsense/create-bfsi-app. Go to <a className="underline" href="/dashboard">/dashboard</a>.
+        Scaffolded from @scope/create-app. Go to{' '}
+        <a className="underline" href="/dashboard">
+          /dashboard
+        </a>
+        .
       </p>
       <p className="mt-4 text-sm text-muted-foreground">
-        Run <code className="rounded bg-muted px-1.5 py-0.5">claude</code> in this directory to start a
-        Claude Code session with the BFSI toolkit enabled. Then run <code className="rounded bg-muted px-1.5 py-0.5">/bfsi-doctor</code>.
+        Run <code className="rounded bg-muted px-1.5 py-0.5">claude</code> in this directory to
+        start a Claude Code session with the BFSI toolkit enabled. Then run{' '}
+        <code className="rounded bg-muted px-1.5 py-0.5">/bfsi-doctor</code>.
       </p>
     </main>
   );
