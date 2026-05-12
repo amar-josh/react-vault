@@ -255,6 +255,7 @@ async function substituteVars(target: string, projectName: string): Promise<void
   const filesToTouch = [
     path.join(target, 'package.json'),
     path.join(target, 'README.md'),
+    path.join(target, 'CLAUDE.md'),
     path.join(target, 'index.html'),
     path.join(target, 'src', 'i18n', 'translations', 'en.json'),
     path.join(target, 'src', 'i18n', 'translations', 'hi.json'),
