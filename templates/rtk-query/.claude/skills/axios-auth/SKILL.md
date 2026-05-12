@@ -1,248 +1,103 @@
 ---
 name: axios-auth
-description: 'Set up Axios instance, request/response interceptors, and custom axiosBaseQuery for RTK Query in Rails-backed React apps. Covers token-based auth with parent/client tokens, automatic auth header injection, 401 handling with auto-logout, success/error notification dispatch, and error response formatting. Use when: axios setup, auth interceptor, token management, API client, base query, 401 handling, notification dispatch.'
+description: Configure the project's axios instance, response interceptor, and RTK Query baseQuery. Sets the auth token ONCE at login via setAuthToken() (not per-request), with response interceptor for notifications + 401 redirect. Use when the user mentions axios, API client, baseQuery, set token, login flow, 401 handling, response interceptor, error notification.
 ---
 
-# Axios & Auth Pattern
+# Axios + Auth Pattern
 
-## Overview
+The HTTP layer is three files under `src/axiosconfig/` plus the auth-token helper from `@<scope>/core/http`. Tokens are set ONCE at login on the axios instance — not injected per-request via interceptor.
 
-The API layer uses three files working together:
+## File map
 
-1. `axiosInstance.ts` - creates the base Axios instance with base URL
-2. `interceptor.ts` - adds request/response interceptors for auth & error handling
-3. `baseQuery.ts` - wraps Axios as an RTK Query-compatible baseQuery function
+| File                               | Role                                                                                            |
+| ---------------------------------- | ----------------------------------------------------------------------------------------------- |
+| `src/axiosconfig/axiosInstance.ts` | Single shared `AxiosInstance` from `createAxios()`                                              |
+| `src/axiosconfig/interceptor.ts`   | Response interceptor: notifications + 401 redirect. Side-effect import from `axiosInstance.ts`. |
+| `src/axiosconfig/baseQuery.ts`     | `axiosBaseQuery()` for RTK Query — wraps the instance                                           |
+| `@<scope>/core/http`               | Exports `createAxios`, `setAuthToken`, `clearAuthToken`, `ApiError`                             |
 
-## 1. Axios Instance (`src/axiosconfig/axiosInstance.ts`)
+## Workflow
 
-```typescript
-import axios from 'axios';
+### Step 1 — Set token at login (the canonical place)
 
-const axiosInstance = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL,
-});
+Inside your login mutation's success path:
 
-export default axiosInstance;
+```ts
+import { setAuthToken } from '@<scope>/core/http';
+import axiosInstance from '@/axiosconfig/axiosInstance';
+
+// After login API returns { token, ... }:
+setAuthToken(axiosInstance, response.token);
 ```
 
-- Base URL comes from Vite environment variable
-- Single instance shared across all API calls
-- No default headers here - interceptors handle auth
+`setAuthToken` writes to `instance.defaults.headers.common.Authorization` (or whatever `authHeaderName` was set). Every subsequent request carries the header automatically — no per-request interceptor needed.
 
-## 2. Request Interceptor (Auth Token Injection)
+### Step 2 — Clear on logout / 401
 
-```typescript
-// src/axiosconfig/interceptor.ts
-import { AxiosError, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
+`createAxios()` already wires this: when a response is 401, it auto-calls `clearAuthToken(instance)` then invokes the `onUnauthorized` callback (which redirects to `/login` in the scaffolded template).
+
+Manual logout flow:
+
+```ts
+import { clearAuthToken } from '@<scope>/core/http';
+import axiosInstance from '@/axiosconfig/axiosInstance';
+
+clearAuthToken(axiosInstance);
+// then dispatch any session-cleanup action and navigate
+```
+
+### Step 3 — Wire notification dispatch in the interceptor (optional)
+
+The scaffolded `interceptor.ts` has commented-out placeholders for notification dispatch. When you set up a Notification slice, uncomment + adapt:
+
+```ts
 import store from '@/redux/store';
 import { setNotification } from '@/shared/Notification/slice';
-import axiosInstance from '@/axiosconfig/axiosInstance';
-import local from '@/utils/helpers/local';
-import { ERROR, LOGGED_IN_USER } from '@/utils/constants/appConstants';
-import { ACCESS_LIST, VALIDATE_INVITATION } from '@/utils/constants/urlConstant';
 
-// Type for login state with dual tokens
-interface ILoginState {
-  parentToken: string | null;
-  clientToken: string | null;
-}
-
-// Request interceptor - inject auth token
-axiosInstance.interceptors.request.use(
-  (config: InternalAxiosRequestConfig) => {
-    const { parentToken, clientToken }: ILoginState = local.getItem(LOGGED_IN_USER);
-
-    // Parent-level endpoints use parentToken
-    if (config?.url === ACCESS_LIST) {
-      config.headers.Authorization = parentToken && parentToken;
-    } else {
-      // Client-level endpoints prefer clientToken, fall back to parentToken
-      config.headers.Authorization = clientToken ? clientToken : parentToken;
-    }
-
-    return config;
-  },
-  (error: AxiosError) => Promise.reject(error),
-);
+// inside the response error handler:
+store.dispatch(setNotification({ type: 'error', message: extractMessage(err) }));
 ```
 
-### Dual Token System
+See [`references/notification-wiring.md`](references/notification-wiring.md) for the full pattern.
 
-The app uses two auth tokens for multi-tenant access:
+### Step 4 — Use `axiosBaseQuery` in feature APIs
 
-- **parentToken**: Organization admin token (set at login)
-- **clientToken**: Specific institutional access token (set when selecting an institution)
-- Most endpoints use `clientToken`; org-level endpoints (like access list) use `parentToken`
+```ts
+import { createApi } from '@reduxjs/toolkit/query/react';
+import axiosBaseQuery from '@/axiosconfig/baseQuery';
 
-## 3. Response Interceptor (Error Handling)
-
-```typescript
-// Error interface matching Rails API error format
-export interface IError {
-  config: { url: string };
-  response: {
-    data: { errors: any; check_destroy?: any };
-    status: number;
-  };
-}
-
-// Response interceptor - handle 401 and errors
-axiosInstance.interceptors.response.use(
-  (response: AxiosResponse) => response,
-  (error: IError) => {
-    // 401 Unauthorized - auto logout
-    if (error?.response?.status === 401) {
-      local.clear();
-      store.dispatch(
-        setNotification({
-          type: ERROR,
-          message: error?.response?.data?.errors[0]?.detail,
-        }),
-      );
-      window.location.href = '/login';
-    }
-
-    return Promise.reject(error);
-  },
-);
-```
-
-## 4. axiosBaseQuery (RTK Query Integration)
-
-```typescript
-// src/axiosconfig/baseQuery.ts
-import { AxiosRequestConfig, AxiosResponse, ResponseType } from 'axios';
-import { BaseQueryFn } from '@reduxjs/toolkit/query';
-import store from '@/redux/store';
-import { setNotification } from '@/shared/Notification/slice';
-import axiosInstance from '@/axiosconfig/axiosInstance';
-import '@/axiosconfig/interceptor'; // Side-effect import to register interceptors
-import { ERROR, SUCCESS } from '@/utils/constants/appConstants';
-import { GET } from '@/utils/constants/apiConstants';
-
-const axiosBaseQuery =
-  (): BaseQueryFn<
-    {
-      url: string;
-      method?: AxiosRequestConfig['method'];
-      data?: AxiosRequestConfig['data'];
-      params?: AxiosRequestConfig['params'];
-      headers?: AxiosRequestConfig['headers'];
-      showSuccesNotification?: boolean;
-      showFailureNotification?: boolean;
-      responseType?: ResponseType;
-    },
-    unknown,
-    unknown
-  > =>
-  async ({
-    url,
-    method,
-    data,
-    showSuccesNotification = false,
-    showFailureNotification = false,
-    responseType,
-  }) => {
-    try {
-      // GET requests: data goes as query params
-      // POST/PUT/DELETE: data goes as request body
-      const requestConfig: AxiosRequestConfig =
-        method === GET ? { url, method, params: data } : { url, method, data };
-
-      if (responseType) {
-        requestConfig.responseType = responseType;
-      }
-
-      const result: AxiosResponse = await axiosInstance(requestConfig);
-      const responseData = result?.data;
-
-      // Dispatch success notification if flagged
-      if (showSuccesNotification) {
-        store.dispatch(setNotification({ type: SUCCESS, message: responseData?.message }));
-      }
-
-      return { data: responseData };
-    } catch (axiosError) {
-      const error = axiosError as IError;
-
-      // Dispatch error notification if flagged
-      if (showFailureNotification) {
-        store.dispatch(
-          setNotification({
-            type: ERROR,
-            message: error?.response?.data?.errors[0]?.detail,
-          }),
-        );
-      }
-
-      return {
-        error: {
-          status: error.response?.status,
-          data: error?.response?.data?.errors,
-        },
-      };
-    }
-  };
-
-export default axiosBaseQuery;
-```
-
-## Notification Integration
-
-The `setNotification` action dispatches to a shared Notification slice:
-
-```typescript
-// src/shared/Notification/slice.ts
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-
-interface INotification {
-  type: string; // "success" | "error"
-  message: string;
-}
-
-const notificationSlice = createSlice({
-  name: 'notification',
-  initialState: { type: '', message: '' },
-  reducers: {
-    setNotification: (state, action: PayloadAction<INotification>) => {
-      state.type = action.payload.type;
-      state.message = action.payload.message;
-    },
-    clearNotification: (state) => {
-      state.type = '';
-      state.message = '';
-    },
-  },
+export const fooApi = createApi({
+  reducerPath: 'fooApi',
+  baseQuery: axiosBaseQuery(),
+  tagTypes: ['Foo'],
+  endpoints: (builder) => ({
+    /* ... */
+  }),
 });
 ```
 
-A shared `<Notification />` component listens to this slice and renders Ant Design notifications.
+Each endpoint can opt-in to success/error notifications via `showSuccessNotification` / `showFailureNotification` flags on the query object (rsense parity).
 
-## localStorage Helper
+## Conventions enforced
 
-```typescript
-// src/utils/helpers/local.ts
-const local = {
-  getItem: (key: string) => {
-    const item = localStorage.getItem(key);
-    return item ? JSON.parse(item) : null;
-  },
-  setItem: (key: string, value: any) => {
-    localStorage.setItem(key, JSON.stringify(value));
-  },
-  removeItem: (key: string) => localStorage.removeItem(key),
-  clear: () => localStorage.clear(),
-};
+- ❌ NEVER inject token via a `request.use` interceptor — use `setAuthToken` at login.
+- ❌ NEVER read token from `localStorage` on every request.
+- ❌ NEVER hardcode `Authorization: Bearer ...` anywhere.
+- ✅ One axios instance per app — exported as the default from `axiosInstance.ts`.
+- ✅ Side-effect import of `'./interceptor.js'` in `axiosInstance.ts` so response interceptors are always registered.
+- ✅ All RTK Query APIs use `axiosBaseQuery()` (never the default `fetchBaseQuery`).
 
-export default local;
-```
+## Quick reference checklist
 
-## Key Rules
+When adding API auth:
 
-1. Auth tokens are NEVER hardcoded - they come from localStorage via the login flow
-2. The interceptor side-effect import in `baseQuery.ts` (`import "@/axiosconfig/interceptor"`) is critical
-3. GET requests automatically convert `data` to query `params` in axiosBaseQuery
-4. Notification flags (`showSuccesNotification`, `showFailureNotification`) are opt-in per endpoint
-5. 401 responses trigger automatic logout (clear storage + redirect to login)
-6. Error responses are normalized to `{ status, data: errors }` format for containers to handle
-7. The Rails backend returns errors as `{ errors: [{ detail: "message" }] }`
+- [ ] Login mutation calls `setAuthToken(axiosInstance, token)` on success
+- [ ] Logout / 401 path calls `clearAuthToken(axiosInstance)`
+- [ ] Token never appears in `localStorage` (memory only, set on the instance)
+- [ ] `onUnauthorized` callback in `axiosInstance.ts` redirects to `/login`
+
+## References
+
+- [`references/full-code-walkthrough.md`](references/full-code-walkthrough.md) — annotated walk through all three files in the scaffolded project
+- [`references/notification-wiring.md`](references/notification-wiring.md) — how to wire `showSuccessNotification` / `showFailureNotification` flags to a Notification slice
+- [`references/error-shape.md`](references/error-shape.md) — backend error contract (`ApiError` kinds, field-error format)
