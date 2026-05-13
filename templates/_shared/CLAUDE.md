@@ -65,6 +65,16 @@ Run `/skills` or open `.claude/skills/<name>/SKILL.md` directly. Reference skill
 - RTK: `axios-auth`, `constants-organization`, `redux-store-integration`, `rtk-query-api`
 - TanStack: `axios-auth`, `constants-organization`, `tanstack-services`, `query-client-setup`
 
+## Auto-review on Stop
+
+A Stop hook runs a review sub-agent after every coding turn. If it finds P0 (security/PII/secrets) or P1 (convention violations) issues in the uncommitted diff, it'll show you the list and ask:
+
+1. **Fix all now** — Claude resolves every P0/P1 finding before stopping
+2. **Fix selected ones** — checkbox list, you pick which
+3. **Skip** — Claude stops; the findings list is yours to act on
+
+No prompt fires when the diff is clean, doc-only, or contains only P2 (style/naming) findings. To turn it off entirely, delete the second entry under `Stop` in `.claude/settings.json`.
+
 ## Gotchas
 
 - `.env.local` is gitignored. If app fails at boot with a Zod error, copy `.env.local.sample` → `.env.local` and fill in real values.
