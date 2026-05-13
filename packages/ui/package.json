@@ -1,6 +1,6 @@
 {
   "name": "@react-vault/ui",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Tailwind + shadcn/ui + BFSI-specific React components: PIIMaskedDisplay, ConfirmModal, SecureFormField, AccessControlledTable, CurrencyDisplay, DateTimeDisplay, and more.",
   "license": "UNLICENSED",
   "type": "module",
@@ -45,7 +45,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "clean": "rm -rf dist .tsbuildinfo"
+    "clean": "rm -rf dist .tsbuildinfo",
+    "prepublishOnly": "pnpm clean && pnpm build"
   },
   "peerDependencies": {
     "react": "18.3.1",

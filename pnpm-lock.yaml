@@ -57,9 +57,6 @@ importers:
       '@clack/prompts':
         specifier: 0.7.0
         version: 0.7.0
-      commander:
-        specifier: 12.0.0
-        version: 12.0.0
       execa:
         specifier: 9.0.2
         version: 9.0.2
@@ -107,7 +104,7 @@ importers:
 
   packages/ui:
     dependencies:
-      '@your-real-scope/core':
+      '@react-vault/core':
         specifier: workspace:*
         version: link:../core
       class-variance-authority:
@@ -1517,13 +1514,6 @@ packages:
         integrity: sha512-yPVavfyCcRhmorC7rWlkHn15b4wDVgVmBA7kV4QVBsF7kv/9TKJAbAXVTxvTnwP8HHKjRCJDClKbciiYS7p0DQ==,
       }
     engines: { node: '>=16' }
-
-  commander@12.0.0:
-    resolution:
-      {
-        integrity: sha512-MwVNWlYjDTtOjX5PiD7o5pK0UrFU/OYgcJfjjK4RaHZETNtjJqrZa9Y9ds88+A+f+d5lv+561eZ+yCKoS3gbAA==,
-      }
-    engines: { node: '>=18' }
 
   compare-func@2.0.0:
     resolution:
@@ -5067,8 +5057,6 @@ snapshots:
       delayed-stream: 1.0.0
 
   commander@11.1.0: {}
-
-  commander@12.0.0: {}
 
   compare-func@2.0.0:
     dependencies:

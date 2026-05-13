@@ -1,6 +1,6 @@
 {
   "name": "@react-vault/create-app",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Scaffold a new BFSI React project with security, audit, encryption, Tailwind, shadcn/ui, and a Claude Code companion baked in. Pick RTK Query or TanStack Query at scaffold time.",
   "license": "UNLICENSED",
   "type": "module",
