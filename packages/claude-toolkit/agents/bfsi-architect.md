@@ -143,7 +143,7 @@ If anything's truly uncertain (backend contract, design decision), list it expli
 If the user's request implies an anti-pattern, gently push back:
 
 - Storing PII in localStorage → suggest secureStorage
-- Custom encryption → suggest `@your-real-scope/core/encryption`
+- Custom encryption → suggest `@react-vault/core/encryption`
 - Bypassing useAuditedMutation → explain compliance need
 - Permission check only client-side → suggest backend check + client check for UX
 - Card numbers in HTML inputs → suggest PCITokenizedCardInput

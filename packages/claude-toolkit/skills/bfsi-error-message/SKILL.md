@@ -43,7 +43,7 @@ A single error gives different content to each tier.
 Generate a short alphanumeric code (e.g. `ERR-A7K2`) that maps to the full error in logs. The user reads this to support; support looks it up. The user sees ONLY the code, never the underlying ID or message.
 
 ```ts
-import { generateErrorRef, recordError } from '@your-real-scope/core/audit';
+import { generateErrorRef, recordError } from '@react-vault/core/audit';
 
 try {
   // ...
@@ -95,7 +95,7 @@ Sentry.init({
 });
 ```
 
-`scrubSentryEvent` (from `@your-real-scope/core/observability`) walks the event and:
+`scrubSentryEvent` (from `@react-vault/core/observability`) walks the event and:
 
 - Removes `request.data` (request body)
 - Removes URL query params matching PII patterns
@@ -112,7 +112,7 @@ Sentry.setUser({ id: user.id }); // ID only — NEVER email, name, mobile
 
 ## Error boundary
 
-Wrap every route in `<BFSIErrorBoundary>` (from `@your-real-scope/ui`). It:
+Wrap every route in `<BFSIErrorBoundary>` (from `@react-vault/ui`). It:
 
 1. Catches the error
 2. Generates a ref code

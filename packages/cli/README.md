@@ -1,7 +1,7 @@
-# @your-real-scope/create-app
+# @react-vault/create-app
 
 ```bash
-npx @your-real-scope/create-app my-bank-app
+npx @react-vault/create-app my-bank-app
 ```
 
 Interactive prompts:
@@ -13,4 +13,4 @@ Interactive prompts:
 
 Scaffolds: `_shared` template + selected variant overlay → `npm install` → `git init` → first commit.
 
-The scaffolded project comes with `.claude/settings.json` enabling the `@your-real-scope/toolkit` plugin — Claude Code is BFSI-aware from the first session.
+The scaffolded project comes with `.claude/settings.json` enabling the `@react-vault/toolkit` plugin — Claude Code is BFSI-aware from the first session.

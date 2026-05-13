@@ -5,7 +5,7 @@
  * for display. Maskers are PURE — same input always produces same output.
  *
  * For interactive click-to-reveal, use the UI component <PIIMaskedDisplay>
- * from @your-real-scope/ui, which uses these maskers internally.
+ * from @react-vault/ui, which uses these maskers internally.
  */
 
 /**

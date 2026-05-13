@@ -2,7 +2,7 @@
  * Single axios instance for the app. Auth token set ONCE at login via
  * setAuthToken() — not per-request.
  */
-import { createAxios } from '@your-real-scope/core/http';
+import { createAxios } from '@react-vault/core/http';
 import { env } from '../env.js';
 
 const axiosInstance = createAxios({

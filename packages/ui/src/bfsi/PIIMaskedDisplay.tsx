@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { mask, type MaskerType } from '@your-real-scope/core/pii';
+import { mask, type MaskerType } from '@react-vault/core/pii';
 import { cn } from '../utils/cn.js';
 
 export interface PIIMaskedDisplayProps {

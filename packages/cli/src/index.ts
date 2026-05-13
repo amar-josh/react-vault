@@ -3,7 +3,7 @@
  *
  * Scaffolds a new BFSI React project from `templates/_shared/` + a variant overlay
  * (RTK Query or TanStack Query), inlines the Claude toolkit into the project's
- * `.claude/` directory, and optionally rewrites `@your-real-scope/*` deps to local `link:`
+ * `.claude/` directory, and optionally rewrites `@react-vault/*` deps to local `link:`
  * paths so the project installs without the packages being published yet.
  */
 import {
@@ -26,15 +26,27 @@ import { execa } from 'execa';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Resolved at runtime: assume CLI is at <starter>/packages/cli/dist/index.js,
-// so going up three levels lands at the starter monorepo root.
-const STARTER_ROOT = path.resolve(__dirname, '..', '..', '..');
-const TEMPLATES_ROOT = path.join(STARTER_ROOT, 'templates');
-const TOOLKIT_ROOT = path.join(STARTER_ROOT, 'packages', 'claude-toolkit');
+// The CLI runs in two modes:
+//   - Dev: inside the monorepo at <starter>/packages/cli/dist/index.js.
+//     Templates are at <starter>/templates/ and the toolkit lives at
+//     <starter>/packages/claude-toolkit/.
+//   - Published: installed at <somewhere>/node_modules/@react-vault/create-app/.
+//     The prepublishOnly script bundles templates/ and claude-toolkit/ INTO
+//     the package itself, so they sit alongside dist/.
+const PACKAGE_ROOT = path.resolve(__dirname, '..');
+const BUNDLED_TEMPLATES = path.join(PACKAGE_ROOT, 'templates');
+const IS_PUBLISHED_MODE = fs.existsSync(BUNDLED_TEMPLATES);
 
-// Placeholder scope baked into the template source files. Gets replaced with
-// @<projectName> at scaffold time so every project has its own scope.
-const PLACEHOLDER_SCOPE = '@your-real-scope';
+const TEMPLATES_ROOT = IS_PUBLISHED_MODE
+  ? BUNDLED_TEMPLATES
+  : path.resolve(PACKAGE_ROOT, '..', '..', 'templates');
+const TOOLKIT_ROOT = IS_PUBLISHED_MODE
+  ? path.join(PACKAGE_ROOT, 'claude-toolkit')
+  : path.resolve(PACKAGE_ROOT, '..', 'claude-toolkit');
+
+// The npm scope used in templates' package.json references. The CLI's `link:`
+// rewrite swaps these to absolute paths for local-dev mode.
+const PACKAGE_SCOPE = '@react-vault';
 
 interface ScaffoldOptions {
   projectName: string;
@@ -47,7 +59,7 @@ interface ScaffoldOptions {
 
 export async function main(): Promise<void> {
   console.log();
-  intro(pc.bold(pc.bgCyan(pc.black(' @your-real-scope/create-app '))));
+  intro(pc.bold(pc.bgCyan(pc.black(' @react-vault/create-app '))));
 
   const projectName = await text({
     message: 'Project name?',
@@ -97,12 +109,20 @@ export async function main(): Promise<void> {
     return cancelled();
   }
 
-  const localLink = (await confirm({
-    message: `Use link: refs for @${projectName as string}/core and @${projectName as string}/ui? (needed until packages are published)`,
-    initialValue: true,
-  })) as boolean;
-  if (isCancel(localLink)) {
-    return cancelled();
+  // In published mode (npx-installed CLI), `link:` paths to a local workspace
+  // don't exist on the user's machine — skip the prompt. In dev mode (running
+  // from the monorepo), offer to point at the local workspace.
+  let localLink = false;
+  if (!IS_PUBLISHED_MODE) {
+    const answer = (await confirm({
+      message:
+        'Use link: refs for @react-vault/core and @react-vault/ui? (points the project at this local workspace instead of fetching from npm)',
+      initialValue: true,
+    })) as boolean;
+    if (isCancel(answer)) {
+      return cancelled();
+    }
+    localLink = answer;
   }
 
   const installDeps = (await confirm({
@@ -171,10 +191,9 @@ async function scaffold(opts: ScaffoldOptions): Promise<void> {
   // 4. Substitute {{projectName}} in package.json, README.md, index.html, i18n
   await substituteVars(target, opts.projectName);
 
-  // 5. Rewrite scope from @your-real-scope to @<projectName>, and link: refs
-  //    for core/ui packages if local-link is on. Replaces the placeholder in
-  //    package.json AND every source file (imports, tailwind config, etc.).
-  await rewriteScope(target, opts.projectName, opts.localLink);
+  // 5. In dev mode, optionally swap @react-vault/{core,ui} dep versions to
+  //    `link:` paths pointing at the workspace. No-op in published mode.
+  await maybeRewriteToLinkDeps(target, opts.localLink);
 
   // 6. Inline the toolkit (skills, agents, commands, hooks) into .claude/.
   //    Variant-specific RTK skills are shipped in templates/rtk-query/.claude/
@@ -273,91 +292,45 @@ async function substituteVars(target: string, projectName: string): Promise<void
 }
 
 /**
- * Renames every @your-real-scope reference to @<projectName>:
- *   - package.json dependency keys (preserves version, then rewrites version
- *     to a `link:` path if localLink is true)
- *   - tailwind.config.ts `content` glob (./node_modules/@scope/ui/...)
- *   - All source files (.ts, .tsx, .js, .jsx, .json, .md) — imports + comments
+ * In local-dev (running from the monorepo) the user can opt-in to rewriting
+ * @react-vault/core and @react-vault/ui dependency versions to `link:` paths
+ * that point at the workspace packages. Lets you `pnpm install` before the
+ * packages are published to npm.
  *
- * After this runs, the scaffolded project consistently uses @<projectName>/core
- * and @<projectName>/ui everywhere. With localLink on, pnpm install will
- * resolve those names to the local workspace via symlink.
+ * In published mode (npx-installed CLI), `link:` paths would dangle, so this
+ * step is a no-op — the templates' versions stay as published npm versions.
  */
-async function rewriteScope(
-  target: string,
-  projectName: string,
-  localLink: boolean,
-): Promise<void> {
-  const newScope = `@${projectName}`;
-  const corePath = path.join(STARTER_ROOT, 'packages', 'core');
-  const uiPath = path.join(STARTER_ROOT, 'packages', 'ui');
-
-  // 1. Rewrite package.json deps: rename key + optionally swap to link:
-  const pkgPath = path.join(target, 'package.json');
-  if (await fs.pathExists(pkgPath)) {
-    const pkg = (await fs.readJSON(pkgPath)) as {
-      dependencies?: Record<string, string>;
-      devDependencies?: Record<string, string>;
-    };
-    for (const key of ['dependencies', 'devDependencies'] as const) {
-      const block = pkg[key];
-      if (!block) {
-        continue;
-      }
-      const next: Record<string, string> = {};
-      for (const [depName, depVersion] of Object.entries(block)) {
-        if (depName.startsWith(`${PLACEHOLDER_SCOPE}/`)) {
-          const subname = depName.slice(PLACEHOLDER_SCOPE.length); // e.g. /core
-          const newName = `${newScope}${subname}`;
-          if (localLink && subname === '/core') {
-            next[newName] = `link:${corePath}`;
-          } else if (localLink && subname === '/ui') {
-            next[newName] = `link:${uiPath}`;
-          } else {
-            next[newName] = depVersion;
-          }
-        } else {
-          next[depName] = depVersion;
-        }
-      }
-      pkg[key] = next;
-    }
-    await fs.writeJSON(pkgPath, pkg, { spaces: 2 });
+async function maybeRewriteToLinkDeps(target: string, localLink: boolean): Promise<void> {
+  if (!localLink || IS_PUBLISHED_MODE) {
+    return;
   }
-
-  // 2. Rewrite the placeholder scope in every source file
-  const sourceFiles = await collectSourceFiles(target);
-  for (const file of sourceFiles) {
-    const content = await fs.readFile(file, 'utf8');
-    if (!content.includes(PLACEHOLDER_SCOPE)) {
+  const pkgPath = path.join(target, 'package.json');
+  if (!(await fs.pathExists(pkgPath))) {
+    return;
+  }
+  const pkg = (await fs.readJSON(pkgPath)) as {
+    dependencies?: Record<string, string>;
+    devDependencies?: Record<string, string>;
+  };
+  // Resolve workspace paths relative to the monorepo root (only valid in dev mode)
+  const starterRoot = path.resolve(PACKAGE_ROOT, '..', '..');
+  const linkTargets: Record<string, string> = {
+    [`${PACKAGE_SCOPE}/core`]: `link:${path.join(starterRoot, 'packages', 'core')}`,
+    [`${PACKAGE_SCOPE}/ui`]: `link:${path.join(starterRoot, 'packages', 'ui')}`,
+  };
+  for (const key of ['dependencies', 'devDependencies'] as const) {
+    const block = pkg[key];
+    if (!block) {
       continue;
     }
-    const replaced = content.replaceAll(PLACEHOLDER_SCOPE, newScope);
-    await fs.writeFile(file, replaced, 'utf8');
-  }
-}
-
-async function collectSourceFiles(dir: string): Promise<string[]> {
-  const out: string[] = [];
-  const skip = new Set(['node_modules', '.git', 'dist', '.turbo', 'build']);
-  async function walk(d: string): Promise<void> {
-    const entries = await fs.readdir(d, { withFileTypes: true });
-    for (const ent of entries) {
-      if (skip.has(ent.name)) {
-        continue;
-      }
-      const p = path.join(d, ent.name);
-      if (ent.isDirectory()) {
-        await walk(p);
-        continue;
-      }
-      if (/\.(ts|tsx|js|jsx|json|md|html|css|cjs|mjs|yaml|yml)$/.test(ent.name)) {
-        out.push(p);
+    for (const depName of Object.keys(block)) {
+      const target = linkTargets[depName];
+      if (target) {
+        block[depName] = target;
       }
     }
   }
-  await walk(dir);
-  return out;
+  await fs.writeJSON(pkgPath, pkg, { spaces: 2 });
 }
 
 /**

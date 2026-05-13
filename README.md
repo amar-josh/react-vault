@@ -1,4 +1,4 @@
-# @your-real-scope/react-starter
+# @react-vault/react-starter
 
 Canonical React starter for **BFSI** (Banking / Financial Services / Insurance) projects at Your Real Company.
 
@@ -27,7 +27,7 @@ Run one command and you have a production-ready React app with:
 ## Quick start (using the starter)
 
 ```bash
-npx @your-real-scope/create-app my-bank-app
+npx @react-vault/create-app my-bank-app
 ```
 
 Interactive prompts:
@@ -52,13 +52,13 @@ claude            # Claude Code session, with BFSI toolkit auto-enabled
 ## Repo layout (this monorepo)
 
 ```
-@your-real-scope/react-starter/
+@react-vault/react-starter/
 ├── docs/                              Docusaurus site (getting started, compliance)
 ├── packages/
-│   ├── cli/                           @your-real-scope/create-app — the npx command
-│   ├── core/                          @your-real-scope/core — security/auth/audit/encryption/utils
-│   ├── ui/                            @your-real-scope/ui — Tailwind + shadcn + BFSI components
-│   └── claude-toolkit/                @your-real-scope/toolkit — Claude Code plugin
+│   ├── cli/                           @react-vault/create-app — the npx command
+│   ├── core/                          @react-vault/core — security/auth/audit/encryption/utils
+│   ├── ui/                            @react-vault/ui — Tailwind + shadcn + BFSI components
+│   └── claude-toolkit/                @react-vault/toolkit — Claude Code plugin
 ├── templates/
 │   ├── _shared/                       common to both variants
 │   ├── rtk-query/                     RTK Query overlay
@@ -83,8 +83,8 @@ pnpm typecheck            # tsc --noEmit across all
 pnpm format               # prettier write
 
 # Run a script in one package
-pnpm --filter @your-real-scope/core build
-pnpm --filter @your-real-scope/toolkit lint
+pnpm --filter @react-vault/core build
+pnpm --filter @react-vault/toolkit lint
 ```
 
 ---
@@ -104,7 +104,7 @@ See [`docs/compliance.md`](./docs/compliance.md) for the full checklist mapping.
 
 ## Claude Code companion
 
-Every scaffolded project ships with `@your-real-scope/toolkit` enabled — a Claude Code plugin containing:
+Every scaffolded project ships with `@react-vault/toolkit` enabled — a Claude Code plugin containing:
 
 | Component | Count | Examples                                                                 |
 | --------- | ----- | ------------------------------------------------------------------------ |

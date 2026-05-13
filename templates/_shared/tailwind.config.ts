@@ -6,7 +6,7 @@ const config: Config = {
   content: [
     './index.html',
     './src/**/*.{ts,tsx}',
-    './node_modules/@your-real-scope/ui/dist/**/*.{js,mjs}',
+    './node_modules/@react-vault/ui/dist/**/*.{js,mjs}',
   ],
   theme: {
     container: {

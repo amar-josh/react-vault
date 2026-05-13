@@ -70,7 +70,7 @@ This is NOT a security review (use `bfsi-security-reviewer` for that). It's a ge
 ### i18n
 
 - Inline user-facing strings not via `t()`
-- Date / number formatting not via Intl-aware formatters from `@your-real-scope/ui`
+- Date / number formatting not via Intl-aware formatters from `@react-vault/ui`
 - Currency hardcoded as `₹` symbol concatenation (use `CurrencyDisplay`)
 
 ### BFSI conventions

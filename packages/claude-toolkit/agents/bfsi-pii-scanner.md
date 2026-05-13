@@ -99,7 +99,7 @@ const validKyc = { pan: 'ABCDE1234F', ... };
 ````
 
 **Issue:** PAN-shaped literal. Even as test data, this triggers compliance audit flags.
-**Fix:** Use a fixture generator: `pan: testPan()` from `@your-real-scope/core/test-utils` which generates clearly-fake values (`ZZZZZ9999Z`).
+**Fix:** Use a fixture generator: `pan: testPan()` from `@react-vault/core/test-utils` which generates clearly-fake values (`ZZZZZ9999Z`).
 
 ## High (PII variable in logging / telemetry / URL): {count}
 

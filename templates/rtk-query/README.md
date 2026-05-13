@@ -24,7 +24,7 @@ src/
 Tokens are set on the axios instance ONCE at login (rsense pattern, not per-request):
 
 ```ts
-import { setAuthToken } from '@your-real-scope/core/http';
+import { setAuthToken } from '@react-vault/core/http';
 import axiosInstance from '@/axiosconfig/axiosInstance';
 
 // inside loginApi's onQueryStarted or login slice:

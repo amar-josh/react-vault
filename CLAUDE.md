@@ -37,13 +37,13 @@ rm -rf /tmp/smoke
 cd /tmp && npx /home/anonymous/Documents/rsense/bfsi-react-starter/packages/cli
 # accept defaults; project name "smoke"
 ls /tmp/smoke/.claude/skills/                 # verify expected skills landed
-grep -r '@your-real-scope' /tmp/smoke/src/    # verify scope rewrite (should be 0 hits)
+grep -r '@react-vault' /tmp/smoke/src/    # verify scope rewrite (should be 0 hits)
 ```
 
 ## Conventions (different from defaults)
 
-- **Placeholder scope `@your-real-scope`** is baked into template source files. The CLI replaces it with `@<projectName>` at scaffold time. If you add a new file referencing `@<scope>/core` or `@<scope>/ui`, write `@your-real-scope/...` — the CLI handles the rest.
-- **Templates are NOT pnpm workspaces.** `templates/<x>/package.json` contains placeholders (`{{projectName}}`, `@your-real-scope/*`) that aren't valid until substituted. Listing them in `pnpm-workspace.yaml` breaks `pnpm install`.
+- **Placeholder scope `@react-vault`** is baked into template source files. The CLI replaces it with `@<projectName>` at scaffold time. If you add a new file referencing `@<scope>/core` or `@<scope>/ui`, write `@react-vault/...` — the CLI handles the rest.
+- **Templates are NOT pnpm workspaces.** `templates/<x>/package.json` contains placeholders (`{{projectName}}`, `@react-vault/*`) that aren't valid until substituted. Listing them in `pnpm-workspace.yaml` breaks `pnpm install`.
 - **Variant overlays overwrite shared.** Files at the same path in `templates/_shared/` and `templates/rtk-query/` mean the variant wins. Don't put RTK-specific stuff in `_shared/`.
 - **Skill source on disk** stays as `~/.claude/skills/rsense-*` for the user's existing setup. The 4 RTK skills were vendored into `templates/rtk-query/.claude/skills/` with the prefix stripped — those are the canonical copies for the starter. Don't try to read from `~/.claude/skills/` in CLI code; the starter must be self-contained.
 - **Conventional Commits with BFSI types** — see `commitlint.config.cjs`. Extra types: `security`, `compliance`, `audit`. No `Co-Authored-By` trailer.

@@ -1,15 +1,15 @@
-# @your-real-scope/core
+# @react-vault/core
 
 Framework-agnostic BFSI security primitives. The "core" package every BFSI React project depends on.
 
 ```ts
-import { aesgcm } from '@your-real-scope/core/encryption';
-import { maskPan, isValidPan } from '@your-real-scope/core/pii';
-import { AuditClient, generateEventId } from '@your-real-scope/core/audit';
-import { createAxios, ApiError } from '@your-real-scope/core/http';
-import { TokenManager, IdleTimer, CrossTabSync } from '@your-real-scope/core/auth';
-import { put, get } from '@your-real-scope/core/storage';
-import { generateCspNonce, buildCsp, toSafeView } from '@your-real-scope/core/compliance';
+import { aesgcm } from '@react-vault/core/encryption';
+import { maskPan, isValidPan } from '@react-vault/core/pii';
+import { AuditClient, generateEventId } from '@react-vault/core/audit';
+import { createAxios, ApiError } from '@react-vault/core/http';
+import { TokenManager, IdleTimer, CrossTabSync } from '@react-vault/core/auth';
+import { put, get } from '@react-vault/core/storage';
+import { generateCspNonce, buildCsp, toSafeView } from '@react-vault/core/compliance';
 ```
 
 ## Modules
@@ -24,7 +24,7 @@ import { generateCspNonce, buildCsp, toSafeView } from '@your-real-scope/core/co
 
 ## Conventions
 
-- **No React dependency.** This is the core. UI lives in `@your-real-scope/ui`.
+- **No React dependency.** This is the core. UI lives in `@react-vault/ui`.
 - **All public APIs are typed.** No `any`.
 - **Errors are typed (`ApiError`).** App code matches on `kind`, not strings.
 - **PII never logged.** All logging paths route through the scrubber.

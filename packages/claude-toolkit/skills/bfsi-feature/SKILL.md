@@ -93,7 +93,7 @@ Output a short summary to the user:
 - **Sensitive fields get `<PIIMaskedDisplay>` wrappers** by default if their names match `/^(pan|aadhaar|account|mobile|email|dob)$/i`.
 - **All mutations go through `useAuditedMutation`** which logs the action.
 - **All routes are `<ProtectedRoute>`** with an explicit `permission` prop.
-- **All forms use `useFormWithZod`** (from `@your-real-scope/ui`) for consistent validation display.
+- **All forms use `useFormWithZod`** (from `@react-vault/ui`) for consistent validation display.
 
 ## Examples
 

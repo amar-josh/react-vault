@@ -1,6 +1,6 @@
 # {{projectName}}
 
-BFSI React app scaffolded from `@your-real-scope/create-app`.
+BFSI React app scaffolded from `@react-vault/create-app`.
 
 ## Quick start
 

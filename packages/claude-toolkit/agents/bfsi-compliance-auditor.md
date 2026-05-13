@@ -30,7 +30,7 @@ The user will specify scope. If they say "compliance audit", default to **RBI An
 | 1.x Network security                | (mostly backend)                                           | N/A — note in report                              |
 | 2.x Inventory & data classification | Codebase manifests PII fields                              | grep for PII patterns; `<PIIMaskedDisplay>` usage |
 | 3.x Logical access                  | Permission-gated routes                                    | `<ProtectedRoute permission="..">` audit          |
-| 4.x Encryption                      | Web Crypto usage                                           | `@your-real-scope/core/encryption` imports        |
+| 4.x Encryption                      | Web Crypto usage                                           | `@react-vault/core/encryption` imports            |
 | 5.x Vulnerability management        | Dep update cadence, `pnpm audit`                           | check CI workflow                                 |
 | 6.x Authentication                  | JWT + idle timeout + MFA                                   | `tokenManager`, `<ProtectedRoute idleTimeout>`    |
 | 7.x Application security            | Input validation, output encoding                          | Zod parsing, `dangerouslySetInnerHTML` audit      |
@@ -135,7 +135,7 @@ Examples:
 **Required:** Encryption at rest and in transit for sensitive data.
 **Found:**
 
-- `@your-real-scope/core/encryption` (AES-GCM 256) imported in src/storage/secureCache.ts.
+- `@react-vault/core/encryption` (AES-GCM 256) imported in src/storage/secureCache.ts.
 - All `localStorage` writes pass through `secureStorage.put()`.
 - HSTS header present in vite.config.ts security plugin.
   **Status:** Met

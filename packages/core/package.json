@@ -1,5 +1,5 @@
 {
-  "name": "@your-real-scope/core",
+  "name": "@react-vault/core",
   "version": "0.1.0",
   "description": "Core BFSI security primitives: encryption, PII masking, audit logging, secure storage, auth, axios factory. Framework-agnostic.",
   "license": "UNLICENSED",
@@ -65,5 +65,31 @@
     "jsdom": "24.0.0",
     "typescript": "5.4.5",
     "vitest": "1.6.0"
+  },
+  "engines": {
+    "node": ">=20.11.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/amar-josh/react-vault.git",
+    "directory": "packages/core"
+  },
+  "homepage": "https://github.com/amar-josh/react-vault#readme",
+  "bugs": {
+    "url": "https://github.com/amar-josh/react-vault/issues"
+  },
+  "keywords": [
+    "bfsi",
+    "fintech",
+    "encryption",
+    "pii",
+    "audit",
+    "rbi",
+    "pci-dss",
+    "axios",
+    "secure-storage"
+  ],
+  "publishConfig": {
+    "access": "public"
   }
 }

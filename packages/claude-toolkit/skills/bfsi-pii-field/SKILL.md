@@ -1,6 +1,6 @@
 ---
 name: bfsi-pii-field
-description: Wraps a data field with PII masking (click-to-reveal + audit log) using PIIMaskedDisplay from @your-real-scope/ui. Use when the user types /bfsi-pii-field, asks to "mask this PAN", "hide the account number", "add masking to Aadhaar", or "make this field a PII field".
+description: Wraps a data field with PII masking (click-to-reveal + audit log) using PIIMaskedDisplay from @react-vault/ui. Use when the user types /bfsi-pii-field, asks to "mask this PAN", "hide the account number", "add masking to Aadhaar", or "make this field a PII field".
 disable-model-invocation: true
 argument-hint: <field-type> <variable-or-prop>
 allowed-tools: Read Edit Grep
@@ -8,7 +8,7 @@ allowed-tools: Read Edit Grep
 
 # BFSI PII Field
 
-Wraps a value display with `<PIIMaskedDisplay type="pan" value={...} />` from `@your-real-scope/ui`.
+Wraps a value display with `<PIIMaskedDisplay type="pan" value={...} />` from `@react-vault/ui`.
 
 ## Supported types
 
@@ -76,7 +76,7 @@ The `auditTarget` prop tells the audit log which resource the field belongs to. 
 ### Step 4: Add the import (if missing)
 
 ```tsx
-import { PIIMaskedDisplay } from '@your-real-scope/ui';
+import { PIIMaskedDisplay } from '@react-vault/ui';
 ```
 
 ### Step 5: Replace + verify

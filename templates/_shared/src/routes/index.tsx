@@ -24,7 +24,7 @@ function Landing(): JSX.Element {
     <main className="container mx-auto py-12">
       <h1 className="text-3xl font-bold tracking-tight">{`{{projectName}}`}</h1>
       <p className="mt-2 text-muted-foreground">
-        Scaffolded from @your-real-scope/create-app. Go to{' '}
+        Scaffolded from @react-vault/create-app. Go to{' '}
         <a className="underline" href="/dashboard">
           /dashboard
         </a>

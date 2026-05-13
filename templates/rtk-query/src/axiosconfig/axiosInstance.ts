@@ -1,12 +1,12 @@
 /**
  * Single axios instance shared across the app. Auth token is set ONCE at
- * login via setAuthToken() from @your-real-scope/core/http (rsense-style,
+ * login via setAuthToken() from @react-vault/core/http (rsense-style,
  * set-at-login — not injected per-request).
  *
  * Side-effect import of `./interceptor` wires the response interceptor for
  * notifications + 401 handling.
  */
-import { createAxios } from '@your-real-scope/core/http';
+import { createAxios } from '@react-vault/core/http';
 import { env } from '../env.js';
 import './interceptor.js';
 

@@ -1,5 +1,5 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react';
-import { generateErrorRef } from '@your-real-scope/core/audit';
+import { generateErrorRef } from '@react-vault/core/audit';
 
 interface Props {
   children: ReactNode;

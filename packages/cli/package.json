@@ -1,18 +1,18 @@
 {
-  "name": "@your-real-scope/create-app",
+  "name": "@react-vault/create-app",
   "version": "0.1.0",
-  "description": "Scaffold a new Your Real Company BFSI React project. Pick a state-management variant (RTK Query or TanStack Query) and get a production-ready starter with security, audit, encryption, and Claude Code companion baked in.",
+  "description": "Scaffold a new BFSI React project with security, audit, encryption, Tailwind, shadcn/ui, and a Claude Code companion baked in. Pick RTK Query or TanStack Query at scaffold time.",
   "license": "UNLICENSED",
   "type": "module",
   "bin": {
-    "create-app": "./bin/create-app.js",
-    "create-scoped-app": "./bin/create-app.js"
+    "create-app": "./bin/create-app.js"
   },
   "main": "./dist/index.js",
   "files": [
     "bin",
     "dist",
     "templates",
+    "claude-toolkit",
     "README.md"
   ],
   "scripts": {
@@ -22,14 +22,14 @@
     "lint:fix": "eslint src --ext .ts --fix",
     "test": "vitest run",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "clean": "rm -rf dist .tsbuildinfo",
-    "pack:local": "node ../../scripts/pack-cli-with-templates.mjs"
+    "clean": "rm -rf dist .tsbuildinfo templates claude-toolkit",
+    "bundle": "node ./scripts/bundle-for-publish.mjs",
+    "prepublishOnly": "pnpm clean && pnpm bundle && pnpm build"
   },
   "dependencies": {
     "@clack/prompts": "0.7.0",
     "picocolors": "1.0.0",
     "fs-extra": "11.2.0",
-    "commander": "12.0.0",
     "execa": "9.0.2"
   },
   "devDependencies": {
@@ -37,5 +37,34 @@
     "@types/fs-extra": "11.0.4",
     "typescript": "5.4.5",
     "vitest": "1.6.0"
+  },
+  "engines": {
+    "node": ">=20.11.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/amar-josh/react-vault.git",
+    "directory": "packages/cli"
+  },
+  "homepage": "https://github.com/amar-josh/react-vault#readme",
+  "bugs": {
+    "url": "https://github.com/amar-josh/react-vault/issues"
+  },
+  "keywords": [
+    "create-app",
+    "react",
+    "vite",
+    "bfsi",
+    "fintech",
+    "tailwind",
+    "shadcn",
+    "rtk-query",
+    "tanstack-query",
+    "claude-code",
+    "scaffolder",
+    "starter"
+  ],
+  "publishConfig": {
+    "access": "public"
   }
 }

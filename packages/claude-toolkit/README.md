@@ -1,4 +1,4 @@
-# @your-real-scope/toolkit
+# @react-vault/toolkit
 
 A Claude Code plugin that makes Claude **BFSI-aware** for every Your Real Company BFSI React project. It ships skills for scaffolding, hooks that enforce security policy, agents that review PRs, and commands that orchestrate the lot.
 

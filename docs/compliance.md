@@ -7,14 +7,14 @@ How the starter maps to specific regulatory controls. This is **evidence prepara
 | §    | Control                         | Evidence in starter                                                              |
 | ---- | ------------------------------- | -------------------------------------------------------------------------------- |
 | 1.x  | Network security                | (backend) — out of scope for frontend                                            |
-| 2.x  | Inventory & data classification | `@your-real-scope/core/pii` patterns catalog; `<PIIMaskedDisplay>` data-attrs    |
+| 2.x  | Inventory & data classification | `@react-vault/core/pii` patterns catalog; `<PIIMaskedDisplay>` data-attrs        |
 | 3.x  | Logical access control          | `<ProtectedRoute permission="...">` + `<CanAccess>`                              |
-| 4.x  | Encryption                      | `@your-real-scope/core/encryption` (AES-GCM 256, RSA-OAEP, envelope)             |
+| 4.x  | Encryption                      | `@react-vault/core/encryption` (AES-GCM 256, RSA-OAEP, envelope)                 |
 | 5.x  | Vulnerability management        | GitHub Actions: `pnpm audit --audit-level=high`, gitleaks scan                   |
 | 6.x  | Authentication                  | `TokenManager` (JWT + refresh) + `IdleTimer` + `CrossTabSync`                    |
 | 6.2  | Idle timeout                    | `<ProtectedRoute idleTimeoutMs>` per-route override; sensitive routes 5min       |
 | 7.x  | Application security            | Zod parse on all API responses; protect-files hook; no `dangerouslySetInnerHTML` |
-| 8.x  | Logging & monitoring            | `@your-real-scope/core/audit` AuditClient (batched, PII-scrubbed)                |
+| 8.x  | Logging & monitoring            | `@react-vault/core/audit` AuditClient (batched, PII-scrubbed)                    |
 | 9.x  | Customer education              | (marketing/copy) — out of scope                                                  |
 | 10.x | Incident response               | ErrorBoundary + Sentry stub + audit `*_failed` events                            |
 | 11.x | Phishing                        | (mostly backend + ops) — no inline forms; HTTPS-only via vite headers            |
@@ -24,16 +24,16 @@ Run `/bfsi-audit rbi` to get a control-by-control evidence report for the curren
 
 ## PCI-DSS v4.0 (frontend-relevant)
 
-| Req    | Control                             | Evidence                                                                                  |
-| ------ | ----------------------------------- | ----------------------------------------------------------------------------------------- |
-| 3.4    | No PAN in plaintext storage/display | `<PCITokenizedCardInput>` (v0.2 — for now: convention + reviewer agent flag)              |
-| 4.x    | Strong crypto in transit            | HSTS + secure cookies via deploy edge; Vite security headers                              |
-| 6.2    | Patched dependencies                | `pnpm audit` in CI                                                                        |
-| 6.5.1  | Injection flaws                     | Zod parse; no string SQL; no `eval` (code-reviewer flag)                                  |
-| 6.5.7  | XSS                                 | No `dangerouslySetInnerHTML` unsanitised; CSP from `@your-real-scope/core/compliance/csp` |
-| 6.5.10 | Broken authentication               | Idle timeout; refresh race protection; cross-tab logout                                   |
-| 8.2.x  | MFA for admin actions               | `<ConfirmModal mfa>` slot (v0.2)                                                          |
-| 10.2.x | Audit trails                        | `useAuditedMutation` + `useAuditedAction`                                                 |
+| Req    | Control                             | Evidence                                                                              |
+| ------ | ----------------------------------- | ------------------------------------------------------------------------------------- |
+| 3.4    | No PAN in plaintext storage/display | `<PCITokenizedCardInput>` (v0.2 — for now: convention + reviewer agent flag)          |
+| 4.x    | Strong crypto in transit            | HSTS + secure cookies via deploy edge; Vite security headers                          |
+| 6.2    | Patched dependencies                | `pnpm audit` in CI                                                                    |
+| 6.5.1  | Injection flaws                     | Zod parse; no string SQL; no `eval` (code-reviewer flag)                              |
+| 6.5.7  | XSS                                 | No `dangerouslySetInnerHTML` unsanitised; CSP from `@react-vault/core/compliance/csp` |
+| 6.5.10 | Broken authentication               | Idle timeout; refresh race protection; cross-tab logout                               |
+| 8.2.x  | MFA for admin actions               | `<ConfirmModal mfa>` slot (v0.2)                                                      |
+| 10.2.x | Audit trails                        | `useAuditedMutation` + `useAuditedAction`                                             |
 
 ## IRDAI Information & Cyber Security Guidelines
 

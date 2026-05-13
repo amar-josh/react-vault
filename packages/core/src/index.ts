@@ -1,9 +1,9 @@
 /**
- * @your-real-scope/core — barrel export.
+ * @react-vault/core — barrel export.
  *
  * Prefer importing from sub-paths for tree-shaking:
- *   import { aesgcm } from '@your-real-scope/core/encryption';
- *   import { maskPan } from '@your-real-scope/core/pii';
+ *   import { aesgcm } from '@react-vault/core/encryption';
+ *   import { maskPan } from '@react-vault/core/pii';
  *
  * Only re-exports for convenience.
  */

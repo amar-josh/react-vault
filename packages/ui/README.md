@@ -1,10 +1,10 @@
-# @your-real-scope/ui
+# @react-vault/ui
 
 React component library on top of Tailwind CSS + shadcn/ui, with BFSI-specific compositions.
 
 ```tsx
-import { PIIMaskedDisplay, CurrencyDisplay, DateTimeDisplay, cn } from '@your-real-scope/ui';
-import { tokens } from '@your-real-scope/ui/theme';
+import { PIIMaskedDisplay, CurrencyDisplay, DateTimeDisplay, cn } from '@react-vault/ui';
+import { tokens } from '@react-vault/ui/theme';
 
 // PII masking with click-to-reveal + audit hook
 <PIIMaskedDisplay

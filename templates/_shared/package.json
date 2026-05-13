@@ -17,8 +17,8 @@
     "prepare": "husky"
   },
   "dependencies": {
-    "@your-real-scope/core": "0.1.0",
-    "@your-real-scope/ui": "0.1.0",
+    "@react-vault/core": "0.1.0",
+    "@react-vault/ui": "0.1.0",
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "react-router-dom": "6.23.0",

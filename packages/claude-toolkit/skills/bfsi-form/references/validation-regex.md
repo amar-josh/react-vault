@@ -1,6 +1,6 @@
 # BFSI Validation Regex Catalogue
 
-All regex patterns used by the `bfsi-form` skill. Keep this file as the single source of truth — the `@your-real-scope/core/pii` module imports from here.
+All regex patterns used by the `bfsi-form` skill. Keep this file as the single source of truth — the `@react-vault/core/pii` module imports from here.
 
 ## Identity
 

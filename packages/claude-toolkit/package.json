@@ -1,5 +1,5 @@
 {
-  "name": "@your-real-scope/toolkit",
+  "name": "@react-vault/toolkit",
   "version": "0.1.0",
   "private": false,
   "description": "Claude Code plugin: BFSI-aware skills, agents, hooks, and commands.",

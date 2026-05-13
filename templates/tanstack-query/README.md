@@ -49,7 +49,7 @@ const detail = useQuery({ queryKey: ['kyc', id], queryFn: () => getKyc(id) });
 The axios instance has no per-request token interceptor. Set the token once at login:
 
 ```ts
-import { setAuthToken } from '@your-real-scope/core/http';
+import { setAuthToken } from '@react-vault/core/http';
 import axiosInstance from '@/api/axiosInstance';
 
 // inside login mutation onSuccess:
