@@ -173,15 +173,24 @@ async function scaffold(opts: ScaffoldOptions): Promise<void> {
     opts.variant === 'rtk' ? 'rtk-query' : 'tanstack-query',
   );
 
+  // Filter checks the path RELATIVE to the source root so it isn't confused
+  // by `node_modules` in the source's own absolute path (e.g. when this CLI
+  // runs from `<npx-cache>/.../node_modules/@react-vault/create-app/templates/`).
+  const buildFilter = (root: string) => (src: string) => {
+    const rel = path.relative(root, src);
+    if (rel === '') {
+      return true;
+    }
+    return !/(\bnode_modules\b|\.turbo\b|\bdist\b)/.test(rel);
+  };
+
   // 1. Copy shared template
   s.start('Copying template files');
-  await fs.copy(sharedDir, target, {
-    filter: (src) => !/(\bnode_modules\b|\.turbo\b|\bdist\b)/.test(src),
-  });
+  await fs.copy(sharedDir, target, { filter: buildFilter(sharedDir) });
 
   // 2. Apply variant overlay
   if (await fs.pathExists(variantDir)) {
-    await fs.copy(variantDir, target, { overwrite: true });
+    await fs.copy(variantDir, target, { overwrite: true, filter: buildFilter(variantDir) });
   }
   s.stop('Template files copied');
 
