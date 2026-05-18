@@ -12,7 +12,7 @@ The HTTP layer is two files under `src/api/` plus the auth-token helper from `@<
 | File                       | Role                                                                               |
 | -------------------------- | ---------------------------------------------------------------------------------- |
 | `src/api/axiosInstance.ts` | Single shared `AxiosInstance` from `createAxios()`                                 |
-| `src/api/http.ts`          | Typed `GET<TRes,TParams>` / `POST<TRes,TReq>` / `PUT` / `PATCH` / `DELETE` helpers |
+| `src/api/http.ts`          | Typed `GET<TRes,TParams>` / `POST<TReq,TRes>` / `PUT` / `PATCH` / `DELETE` helpers |
 | `@<scope>/core/http`       | Exports `createAxios`, `setAuthToken`, `clearAuthToken`, `ApiError`                |
 
 ## Workflow
@@ -63,32 +63,26 @@ function logout() {
 ### Step 3 — Use the typed HTTP helpers in services
 
 ```ts
-// src/services/kyc.ts
+// src/features/kyc/services.ts
 import { GET, POST } from '@/api/http';
-
-export interface IKycRequest {
-  pan: string;
-  aadhaar: string;
-}
-export interface IKycResponse {
-  id: string;
-  status: 'pending' | 'approved' | 'rejected';
-}
+import { KYC_ENDPOINTS } from '@/constants/endPoints';
+import type { IKycRequest, IKycResponse } from './types';
 
 export const submitKyc = (payload: IKycRequest): Promise<IKycResponse> =>
-  POST<IKycResponse, IKycRequest>('/kyc', payload);
+  POST<IKycRequest, IKycResponse>(KYC_ENDPOINTS.SUBMIT, payload);
 
-export const getKyc = (id: string): Promise<IKycResponse> => GET<IKycResponse>(`/kyc/${id}`);
+export const getKyc = (id: string): Promise<IKycResponse> =>
+  GET<IKycResponse>(KYC_ENDPOINTS.DETAIL(id));
 ```
 
-Services are pure async functions — no hooks, no React. That makes them trivially unit-testable.
+Generic order on write methods is `<TRequest, TResponse>` — request first, response second. Endpoints come from `@/constants/endPoints`, never inline. Services are pure async functions — no hooks, no React. That makes them trivially unit-testable.
 
 ## Conventions enforced
 
 - ❌ NEVER inject token via a `request.use` interceptor — use `setAuthToken` at login.
 - ❌ NEVER read token from `localStorage` on every request.
 - ❌ NEVER hardcode `Authorization: Bearer ...` anywhere.
-- ❌ NEVER use plain `axios.get(...)` in service files — use the typed `GET<TRes,TParams>` helper.
+- ❌ NEVER use plain `axios.get(...)` in service files — use the typed `GET<TRes,TParams>` / `POST<TReq,TRes>` helpers.
 - ✅ One axios instance per app — exported as the default from `axiosInstance.ts`.
 - ✅ All services use typed helpers from `src/api/http.ts`.
 - ✅ On logout: `clearAuthToken()` + `queryClient.clear()`.

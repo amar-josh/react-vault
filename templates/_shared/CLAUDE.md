@@ -53,7 +53,7 @@ src/
 Variant-specific:
 
 - **RTK Query**: `src/axiosconfig/` (instance + interceptor + baseQuery), `src/redux/` (store + rootReducer + reduxHooks + invalidateCacheMiddleware)
-- **TanStack Query**: `src/api/` (axiosInstance + http + queryClient), `src/services/` (typed service methods)
+- **TanStack Query**: `src/api/` (axiosInstance + http + queryClient), `src/constants/` (endPoints + statusCodes), `src/features/<feature>/` (services.ts + hooks/ + types.ts + utils.ts (Zod) + components/), `src/components/common/` (FormInput + other RHF helpers). Reference feature: `src/features/login/`.
 
 ## Claude skills available
 

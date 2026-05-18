@@ -1,18 +1,23 @@
 /**
  * Typed HTTP helpers for TanStack Query feature services.
  *
- * Usage:
- *   import { GET, POST, PUT, PATCH, DELETE } from '@/api/http';
+ * Generic order is <TRequest, TResponse> — request first, response second —
+ * matching how services read in the codebase:
  *
- *   interface ILoginRequest { email: string; password: string; }
- *   interface ILoginResponse { token: string; userId: string; }
+ *   POST<ILoginRequest, ILoginResponse>('/auth/login', payload)
+ *                 ^^^^^^^^^^^^^                 ^^^^^^^^^^^^^^^
+ *                 send this                     get this back
  *
- *   export const loginService = (payload: ILoginRequest) =>
- *     POST<ILoginResponse, ILoginRequest>('/auth/login', payload);
+ * Usage in a feature service:
  *
- * Pair with useMutation / useQuery:
- *   const m = useMutation({ mutationFn: loginService });
- *   const q = useQuery({ queryKey: ['kyc', id], queryFn: () => getKyc(id) });
+ *   import { GET, POST } from '@/api/http';
+ *
+ *   export const loginService = (payload: ILoginRequest): Promise<ILoginResponse> =>
+ *     POST<ILoginRequest, ILoginResponse>(ENDPOINTS.LOGIN, payload);
+ *
+ * Then wrap with useMutation / useQuery in the feature's hooks file:
+ *
+ *   export const useLogin = () => useMutation({ mutationFn: loginService });
  */
 import type { AxiosRequestConfig } from 'axios';
 import axiosInstance from './axiosInstance.js';
@@ -26,7 +31,7 @@ export async function GET<TResponse, TParams = void>(
   return data;
 }
 
-export async function POST<TResponse, TRequest = void>(
+export async function POST<TRequest = void, TResponse = unknown>(
   url: string,
   payload?: TRequest,
   config?: AxiosRequestConfig,
@@ -35,7 +40,7 @@ export async function POST<TResponse, TRequest = void>(
   return data;
 }
 
-export async function PUT<TResponse, TRequest = void>(
+export async function PUT<TRequest = void, TResponse = unknown>(
   url: string,
   payload?: TRequest,
   config?: AxiosRequestConfig,
@@ -44,7 +49,7 @@ export async function PUT<TResponse, TRequest = void>(
   return data;
 }
 
-export async function PATCH<TResponse, TRequest = void>(
+export async function PATCH<TRequest = void, TResponse = unknown>(
   url: string,
   payload?: TRequest,
   config?: AxiosRequestConfig,

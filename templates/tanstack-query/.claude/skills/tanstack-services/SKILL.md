@@ -1,142 +1,185 @@
 ---
 name: tanstack-services
-description: Create the service layer for a feature — typed async functions that wrap the HTTP helpers (GET/POST/PUT/PATCH/DELETE) and return parsed responses. Services are hook-free and consumed by useQuery / useMutation in components. Use when adding a new feature's services, adding a new service to an existing feature, or wiring API endpoints.
+description: Create a feature's service + hooks layer — typed async functions calling the HTTP helpers, then thin useQuery/useMutation wrappers in a hooks file. Pair with Zod schemas in utils.ts and interfaces in types.ts. Use when adding a new feature, adding a new endpoint to an existing feature, or wiring API request/response handling.
 ---
 
-# TanStack Services
+# TanStack Services + Hooks (feature-folder pattern)
 
-Every feature has a service file at `src/services/<feature>.ts` (or `src/features/<Feature>/service.ts`). Services are plain async functions: typed inputs in, typed parsed output out. No hooks. No React.
+Every feature lives in `src/features/<feature>/` and owns its own services, hooks, types, schemas, and components. Services are plain async functions. Hooks are thin TanStack wrappers. This mirrors the layout used in production banking apps (e.g. stp-portal).
 
-## File map (typical feature)
+## File map per feature
 
 ```
-src/features/<Feature>/
-├── service.ts          typed async functions
-├── schema.ts           Zod schemas (request + response)
-├── types.ts            inferred types from Zod
-├── containers/...      React components that call services via useQuery/useMutation
+src/features/<feature>/
+├── components/<FeatureForm>.tsx     UI built on react-hook-form + FormInput
+├── hooks/use<Feature>.ts            useMutation / useQuery wrappers
+├── index.tsx                        page entry — the route renders this
+├── services.ts                      typed async functions wrapping POST/GET/PUT/...
+├── types.ts                         I-prefixed request/response interfaces
+└── utils.ts                         Zod schemas, defaults, helpers
 ```
 
-## Workflow — new feature service
+Endpoints + status codes are shared, not per-feature:
 
-### Step 1 — Define schemas
+```
+src/constants/
+├── endPoints.ts                     Object.freeze({...}) per service block
+└── statusCodes.ts                   STATUS_CODE.OK / .UNAUTHORIZED / ...
+```
 
-`src/features/Kyc/schema.ts`:
+## The five files a new feature needs
+
+### 1. `types.ts` — request/response shapes
+
+```ts
+export interface ILoginRequest {
+  username: string;
+  password: string;
+}
+
+export interface ILoginResponseData {
+  token: string;
+  userAttributes: { userId: string; name: string; email: string; roles: string[] };
+}
+
+export interface ILoginResponse {
+  statusCode: number;
+  status: 'success' | 'failure';
+  message: string;
+  data: ILoginResponseData;
+}
+```
+
+The envelope (`statusCode / status / message / data`) is the project convention; flatten if your backend doesn't use it, but stay consistent across features.
+
+### 2. `utils.ts` — Zod schema + form defaults
+
+Schemas live next to the feature. Form value types are **inferred** from the schema — never hand-written.
 
 ```ts
 import { z } from 'zod';
-import { PAN_REGEX, AADHAAR_REGEX } from '@/utils/constants/regexConstants';
 
-export const kycRecordSchema = z.object({
-  id: z.string(),
-  pan: z.string().regex(PAN_REGEX),
-  aadhaar: z.string().regex(AADHAAR_REGEX),
-  status: z.enum(['pending', 'approved', 'rejected']),
-  createdAt: z.coerce.date(),
+export const MIN_USERNAME_LENGTH = 3;
+
+export const loginSchema = z.object({
+  username: z
+    .string()
+    .min(MIN_USERNAME_LENGTH, `Username must be at least ${MIN_USERNAME_LENGTH} characters`),
+  password: z.string().trim().min(1, 'Password is required'),
 });
 
-export const kycListResponseSchema = z.object({
-  items: z.array(kycRecordSchema),
-  total: z.number().int().nonnegative(),
-});
+export type ILoginFormValues = z.infer<typeof loginSchema>;
 
-export const kycSubmitRequestSchema = z.object({
-  pan: z.string().regex(PAN_REGEX),
-  aadhaar: z.string().regex(AADHAAR_REGEX),
-});
+export const LOGIN_FORM_DEFAULT_VALUES: ILoginFormValues = {
+  username: '',
+  password: '',
+};
 ```
 
-Types are inferred — never hand-write:
+Conditional / cross-field validation uses Zod's `.refine()` / `.superRefine()` (the Zod equivalent of Yup's `.when()`).
+
+### 3. `services.ts` — typed async functions
 
 ```ts
-// types.ts
-import { z } from 'zod';
-import type { kycRecordSchema, kycListResponseSchema, kycSubmitRequestSchema } from './schema';
+import { POST } from '@/api/http';
+import { ENDPOINTS } from '@/constants/endPoints';
+import type { ILoginRequest, ILoginResponse } from './types';
 
-export type IKycRecord = z.infer<typeof kycRecordSchema>;
-export type IKycListResponse = z.infer<typeof kycListResponseSchema>;
-export type IKycSubmitRequest = z.infer<typeof kycSubmitRequestSchema>;
+export const loginService = (payload: ILoginRequest): Promise<ILoginResponse> =>
+  POST<ILoginRequest, ILoginResponse>(ENDPOINTS.LOGIN, payload);
+
+export const logoutService = (): Promise<void> => POST<void, void>(ENDPOINTS.LOGOUT);
 ```
 
-### Step 2 — Write services
+Generic order is `<TRequest, TResponse>` — request first, response second. Reads like the call: "POST this payload, get this back".
 
-`src/features/Kyc/service.ts`:
+### 4. `hooks/use<Feature>.ts` — thin TanStack wrappers
 
 ```ts
-import { GET, POST } from '@/api/http';
-import { KYC_URLS } from '@/utils/constants/urlConstants';
-import { kycRecordSchema, kycListResponseSchema } from './schema';
-import type { IKycRecord, IKycListResponse, IKycSubmitRequest } from './types';
+import { useMutation } from '@tanstack/react-query';
+import { loginService, logoutService } from '../services';
 
-export const getKycList = async (): Promise<IKycListResponse> => {
-  const raw = await GET<unknown>(KYC_URLS.LIST);
-  return kycListResponseSchema.parse(raw);
-};
-
-export const getKycDetail = async (id: string): Promise<IKycRecord> => {
-  const raw = await GET<unknown>(KYC_URLS.DETAIL(id));
-  return kycRecordSchema.parse(raw);
-};
-
-export const submitKyc = async (payload: IKycSubmitRequest): Promise<IKycRecord> => {
-  const raw = await POST<unknown, IKycSubmitRequest>(KYC_URLS.SUBMIT, payload);
-  return kycRecordSchema.parse(raw);
-};
+export const useLogin = () => useMutation({ mutationFn: loginService });
+export const useLogout = () => useMutation({ mutationFn: logoutService });
 ```
 
-### Step 3 — Use in components
+Don't bake `onSuccess` / `onError` into the hook — let the caller decide per call-site so the same hook works in different flows.
+
+For queries:
+
+```ts
+import { useQuery } from '@tanstack/react-query';
+import { getUserDetail } from '../services';
+
+export const useUserDetail = (id: string) =>
+  useQuery({
+    queryKey: ['user', 'detail', id],
+    queryFn: () => getUserDetail(id),
+    enabled: Boolean(id),
+  });
+```
+
+Promote queryKeys to `src/constants/queryKeys.ts` once two features share a key shape — until then inline is fine.
+
+### 5. `components/<FeatureForm>.tsx` — RHF + Zod + the hook
 
 ```tsx
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { kycKeys } from '@/utils/constants/queryKeys';
-import { getKycList, getKycDetail, submitKyc } from './service';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+import { FormInput } from '@/components/common/FormInput';
+import { useLogin } from '../hooks/useLogin';
+import { LOGIN_FORM_DEFAULT_VALUES, loginSchema, type ILoginFormValues } from '../utils';
 
-function KycList() {
-  const { data, isLoading, error } = useQuery({
-    queryKey: kycKeys.lists(),
-    queryFn: getKycList,
+export function LoginForm({ onLoggedIn }: { onLoggedIn: (r: ILoginResponse) => void }) {
+  const { mutate, isPending, error } = useLogin();
+  const form = useForm<ILoginFormValues>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: LOGIN_FORM_DEFAULT_VALUES,
   });
-  // ...
-}
 
-function KycForm() {
-  const queryClient = useQueryClient();
-  const submit = useMutation({
-    mutationFn: submitKyc,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: kycKeys.all });
-    },
-  });
-  // ...
+  const onSubmit = (values: ILoginFormValues) => mutate(values, { onSuccess: onLoggedIn });
+
+  return (
+    <form onSubmit={form.handleSubmit(onSubmit)} noValidate className="space-y-4">
+      <FormInput control={form.control} name="username" label="Username" isRequired />
+      <FormInput control={form.control} name="password" label="Password" isSensitive isRequired />
+      {error && <p role="alert">{(error as { message?: string }).message ?? 'Login failed.'}</p>}
+      <button type="submit" disabled={isPending}>
+        {isPending ? 'Signing in…' : 'Sign in'}
+      </button>
+    </form>
+  );
 }
 ```
+
+`FormInput` is the generic wrapper at `src/components/common/FormInput.tsx` — uses RHF's `Controller`, types `name` via `Path<T>`, renders error from `fieldState`.
+
+## Reference feature
+
+The scaffolded project ships a working example at `src/features/login/`. Open those six files when adding a new feature — copy the shape, don't reinvent it.
 
 ## Conventions enforced
 
-- ❌ NEVER use `axios.<method>` directly — use the typed `GET<TRes, TParams>` / `POST<TRes, TReq>` helpers from `@/api/http`.
-- ❌ NEVER skip the `.parse()` step — every response goes through Zod validation at runtime.
-- ❌ NEVER inline a URL string — use `urlConstants.ts`.
-- ❌ NEVER call services without typing the response — the generic on `GET<IResponse>` is required.
-- ❌ NEVER put React hooks in service files — services are pure async functions.
-- ✅ One service file per feature; export named async functions.
-- ✅ Request types prefixed `I` (`IKycSubmitRequest`) to match service interface convention.
-- ✅ Responses parsed by Zod schemas from the same feature's `schema.ts`.
-- ✅ Use `getX` / `submitX` / `updateX` / `deleteX` naming for service functions.
+- ❌ NEVER use `axios.<method>` directly in service files — use `GET<TRes, TParams>` / `POST<TReq, TRes>` from `@/api/http`.
+- ❌ NEVER inline a URL string — reference `@/constants/endPoints`.
+- ❌ NEVER hand-write a form-value type — infer from the Zod schema with `z.infer<typeof ...>`.
+- ❌ NEVER put React hooks in `services.ts` — services are pure async functions.
+- ❌ NEVER bake `onSuccess` / `onError` into the hook — pass them at the call-site.
+- ✅ One `services.ts` per feature; one `hooks/use<Feature>.ts` per feature.
+- ✅ Request interfaces prefixed `I` (`ILoginRequest`); responses likewise.
+- ✅ Generic order on write methods: `POST<TRequest, TResponse>(...)`.
+- ✅ Zod schema lives in the feature's `utils.ts`; default form values exported alongside.
 
-## Service vs hook
+## When to break each rule
 
-A service is a plain function: `getKyc(id): Promise<IKycRecord>`.
+The conventions above cover ~95% of cases. The other 5%:
 
-A hook wraps it with TanStack Query: `useQuery({ queryKey: kycKeys.detail(id), queryFn: () => getKyc(id) })`.
-
-Don't pre-bundle the hook into the service. Keep services hook-free so:
-
-- They're trivial to unit test (call them directly with mocked axios)
-- The component decides cache behaviour (staleTime, refetch, enabled, etc.)
-- The same service can power useQuery, useMutation, OR a direct call outside a component (rare but useful — e.g. in a logout flow)
+- **Multiple service files per feature** if the feature genuinely splits across two backends (e.g. customer search + biometrics) — name them `services/customer.ts`, `services/biometric.ts` and re-export from `services/index.ts`.
+- **A queryKey factory in `src/constants/queryKeys.ts`** once a key is referenced from 2+ features. Inline keys are fine for one-feature usage.
+- **Skip the envelope** for endpoints that return a plain primitive or array — type the service's return as that primitive directly.
 
 ## References
 
-- [`references/service-cookbook.md`](references/service-cookbook.md) — list, detail, paginated, file-upload, file-download, polling examples
+- [`references/service-cookbook.md`](references/service-cookbook.md) — list, paginated, detail, create, update, delete, polling, file upload/download
 - [`references/optimistic-update.md`](references/optimistic-update.md) — optimistic mutations with cache patches
 - [`references/audited-mutation.md`](references/audited-mutation.md) — wrapping useMutation to fire audit events

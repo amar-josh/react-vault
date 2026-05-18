@@ -1,97 +1,116 @@
 # Service cookbook (TanStack)
 
-Templates for common shapes. Copy + adapt.
+Templates for common shapes. Copy + adapt. All examples use the feature-folder
+layout (`src/features/<feature>/services.ts`) and the `<TRequest, TResponse>`
+generic order on write methods.
 
 ## List
 
 ```ts
-export const getKycList = async (): Promise<IKycListResponse> => {
-  const raw = await GET<unknown>(KYC_URLS.LIST);
-  return kycListResponseSchema.parse(raw);
-};
+// services.ts
+export const getUserList = (): Promise<IUserListResponse> =>
+  GET<IUserListResponse>(USER_ENDPOINTS.LIST);
+```
+
+```ts
+// hooks/useUser.ts
+export const useUserList = () => useQuery({ queryKey: ['user', 'list'], queryFn: getUserList });
 ```
 
 ## Paginated list
 
 ```ts
-export const getKycList = async (params: {
+// services.ts
+export const getUserList = (params: {
   page: number;
   pageSize: number;
-  status?: KycStatus;
-}): Promise<IKycListResponse> => {
-  const raw = await GET<unknown, typeof params>(KYC_URLS.LIST, params);
-  return kycListResponseSchema.parse(raw);
-};
+  status?: 'active' | 'inactive';
+}): Promise<IUserListResponse> =>
+  GET<IUserListResponse, typeof params>(USER_ENDPOINTS.LIST, params);
+```
 
-// Component:
+```tsx
 const { data } = useQuery({
-  queryKey: kycKeys.list({ page, pageSize, status }),
-  queryFn: () => getKycList({ page, pageSize, status }),
-  placeholderData: (prev) => prev, // smooth pagination — keep previous data visible
+  queryKey: ['user', 'list', { page, pageSize, status }],
+  queryFn: () => getUserList({ page, pageSize, status }),
+  placeholderData: (prev) => prev, // smooth pagination
 });
 ```
 
 ## Detail
 
 ```ts
-export const getKycDetail = async (id: string): Promise<IKycRecord> => {
-  const raw = await GET<unknown>(KYC_URLS.DETAIL(id));
-  return kycRecordSchema.parse(raw);
-};
+// services.ts
+export const getUserDetail = (id: string): Promise<IUserDetailResponse> =>
+  GET<IUserDetailResponse>(USER_ENDPOINTS.DETAIL(id));
+```
+
+```ts
+// hooks/useUser.ts
+export const useUserDetail = (id: string) =>
+  useQuery({
+    queryKey: ['user', 'detail', id],
+    queryFn: () => getUserDetail(id),
+    enabled: Boolean(id),
+  });
 ```
 
 ## Create
 
 ```ts
-export const submitKyc = async (payload: IKycSubmitRequest): Promise<IKycRecord> => {
-  const raw = await POST<unknown, IKycSubmitRequest>(KYC_URLS.SUBMIT, payload);
-  return kycRecordSchema.parse(raw);
-};
+// services.ts
+export const createUser = (payload: ICreateUserRequest): Promise<IUserDetailResponse> =>
+  POST<ICreateUserRequest, IUserDetailResponse>(USER_ENDPOINTS.CREATE, payload);
+```
 
-// Component:
-const submit = useMutation({
-  mutationFn: submitKyc,
-  onSuccess: (newRecord) => {
-    queryClient.invalidateQueries({ queryKey: kycKeys.lists() });
-    queryClient.setQueryData(kycKeys.detail(newRecord.id), newRecord);
+```tsx
+const queryClient = useQueryClient();
+const { mutate } = useMutation({
+  mutationFn: createUser,
+  onSuccess: (response) => {
+    queryClient.invalidateQueries({ queryKey: ['user', 'list'] });
+    queryClient.setQueryData(['user', 'detail', response.data.id], response);
   },
 });
 ```
 
 ## Update
 
-```ts
-export const updateKyc = async (args: {
-  id: string;
-  body: IKycUpdateRequest;
-}): Promise<IKycRecord> => {
-  const raw = await PUT<unknown, IKycUpdateRequest>(KYC_URLS.DETAIL(args.id), args.body);
-  return kycRecordSchema.parse(raw);
-};
+Mutations that take both an id and a body wrap them in a single object so
+`mutationFn` stays typed as `(args: {...}) => Promise<...>`.
 
-// Component:
-const update = useMutation({
-  mutationFn: updateKyc,
-  onSuccess: (updated, { id }) => {
-    queryClient.invalidateQueries({ queryKey: kycKeys.lists() });
-    queryClient.setQueryData(kycKeys.detail(id), updated);
+```ts
+// services.ts
+export const updateUser = (args: {
+  id: string;
+  body: IUpdateUserRequest;
+}): Promise<IUserDetailResponse> =>
+  PUT<IUpdateUserRequest, IUserDetailResponse>(USER_ENDPOINTS.UPDATE(args.id), args.body);
+```
+
+```tsx
+const { mutate } = useMutation({
+  mutationFn: updateUser,
+  onSuccess: (response, { id }) => {
+    queryClient.invalidateQueries({ queryKey: ['user', 'list'] });
+    queryClient.setQueryData(['user', 'detail', id], response);
   },
 });
 ```
 
-Pattern: mutations that take both an id and a body wrap them in a single object. Keeps `mutationFn` typed as `(args: {...}) => Promise<...>` rather than overloaded.
-
 ## Delete
 
 ```ts
-export const deleteKyc = (id: string): Promise<void> => DELETE<void>(KYC_URLS.DETAIL(id));
+// services.ts
+export const deleteUser = (id: string): Promise<void> => DELETE<void>(USER_ENDPOINTS.DELETE(id));
+```
 
-// Component:
-const del = useMutation({
-  mutationFn: deleteKyc,
+```tsx
+const { mutate } = useMutation({
+  mutationFn: deleteUser,
   onSuccess: (_, id) => {
-    queryClient.invalidateQueries({ queryKey: kycKeys.lists() });
-    queryClient.removeQueries({ queryKey: kycKeys.detail(id) });
+    queryClient.invalidateQueries({ queryKey: ['user', 'list'] });
+    queryClient.removeQueries({ queryKey: ['user', 'detail', id] });
   },
 });
 ```
@@ -99,17 +118,17 @@ const del = useMutation({
 ## Polling (e.g. async job status)
 
 ```ts
-export const getJobStatus = async (jobId: string): Promise<IJobStatus> => {
-  const raw = await GET<unknown>(JOB_URLS.STATUS(jobId));
-  return jobStatusSchema.parse(raw);
-};
+// services.ts
+export const getJobStatus = (jobId: string): Promise<IJobStatusResponse> =>
+  GET<IJobStatusResponse>(JOB_ENDPOINTS.STATUS(jobId));
+```
 
-// Component:
+```tsx
 const { data } = useQuery({
-  queryKey: jobKeys.status(jobId),
+  queryKey: ['job', 'status', jobId],
   queryFn: () => getJobStatus(jobId),
   refetchInterval: (query) => {
-    const status = query.state.data?.status;
+    const status = query.state.data?.data?.status;
     return status === 'completed' || status === 'failed' ? false : 3000;
   },
 });
@@ -118,34 +137,37 @@ const { data } = useQuery({
 ## File upload
 
 ```ts
-export const uploadDocument = async (file: File): Promise<IDocumentRecord> => {
+// services.ts
+export const uploadDocument = (file: File): Promise<IDocumentResponse> => {
   const form = new FormData();
   form.append('file', file);
-  const raw = await POST<unknown, FormData>(DOCS_URLS.UPLOAD, form, {
+  return POST<FormData, IDocumentResponse>(DOCS_ENDPOINTS.UPLOAD, form, {
     headers: { 'Content-Type': 'multipart/form-data' },
   });
-  return documentRecordSchema.parse(raw);
 };
 ```
 
 ## File download
 
 ```ts
+// services.ts
 export const downloadStatement = (id: string): Promise<Blob> =>
-  GET<Blob, void>(STATEMENT_URLS.DOWNLOAD(id), undefined, { responseType: 'blob' });
+  GET<Blob, void>(STATEMENT_ENDPOINTS.DOWNLOAD(id), undefined, { responseType: 'blob' });
 ```
 
 ## Parallel fetches in one query
 
 ```ts
-export const getDashboardData = async (userId: string): Promise<IDashboardData> => {
+// services.ts
+export const getDashboardData = async (userId: string): Promise<IDashboardResponse> => {
   const [profile, accounts, recent] = await Promise.all([
-    GET<unknown>(USER_URLS.PROFILE(userId)),
-    GET<unknown>(ACCOUNT_URLS.LIST_FOR_USER(userId)),
-    GET<unknown>(TX_URLS.RECENT_FOR_USER(userId, { limit: 5 })),
+    GET<IProfileResponse>(USER_ENDPOINTS.DETAIL(userId)),
+    GET<IAccountListResponse>(ACCOUNT_ENDPOINTS.LIST_FOR_USER(userId)),
+    GET<ITransactionListResponse>(TX_ENDPOINTS.RECENT_FOR_USER(userId)),
   ]);
-  return dashboardSchema.parse({ profile, accounts, recent });
+  return { profile, accounts, recent };
 };
 ```
 
-Components calling this get one queryKey, one loading state, one error — even though it makes 3 HTTP calls.
+The component gets one queryKey, one loading state, one error — even though
+three HTTP calls run underneath.
