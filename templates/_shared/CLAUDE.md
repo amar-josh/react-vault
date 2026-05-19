@@ -62,8 +62,9 @@ Run `/skills` or open `.claude/skills/<name>/SKILL.md` directly. Reference skill
 **Always available** (from the toolkit): `/bfsi-feature`, `/bfsi-form`, `/bfsi-pii-field`, `/bfsi-api-endpoint`, `/bfsi-compliance-check`, `/bfsi-commit`, `/bfsi-doctor`, `/bfsi-onboarding`, `/bfsi-review`, `/bfsi-audit`.
 
 **Variant-specific** (in `.claude/skills/`):
-- RTK: `axios-auth`, `constants-organization`, `redux-store-integration`, `rtk-query-api`
-- TanStack: `axios-auth`, `constants-organization`, `tanstack-services`, `query-client-setup`
+
+- RTK: `axios-auth`, `constants-organization`, `redux-store-integration`, `rtk-query-api`, `testing-patterns`
+- TanStack: `axios-auth`, `constants-organization`, `tanstack-services`, `query-client-setup`, `testing-patterns`
 
 ## Auto-review on Stop
 
