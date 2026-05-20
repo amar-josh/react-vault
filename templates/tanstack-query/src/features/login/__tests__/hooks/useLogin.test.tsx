@@ -7,16 +7,16 @@
 import { renderHook, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-vi.mock('../services', () => ({
+vi.mock('../../services', () => ({
   loginService: vi.fn(),
   logoutService: vi.fn(),
 }));
 
 import { createWrapper } from '@/test-utils/render';
 
-import { loginService } from '../services';
-import type { ILoginResponse } from '../types';
-import { useLogin } from './useLogin';
+import { loginService } from '../../services';
+import type { ILoginResponse } from '../../types';
+import { useLogin } from '../../hooks/useLogin';
 
 const mockedLogin = vi.mocked(loginService);
 

@@ -24,8 +24,8 @@ vi.mock('@/api/axiosInstance', () => ({
 import axiosInstance from '@/api/axiosInstance';
 import { ENDPOINTS } from '@/constants/endPoints';
 
-import { loginService, logoutService } from './services';
-import type { ILoginResponse } from './types';
+import { loginService, logoutService } from '../../services';
+import type { ILoginResponse } from '../../types';
 
 const mockedPost = vi.mocked(axiosInstance.post);
 

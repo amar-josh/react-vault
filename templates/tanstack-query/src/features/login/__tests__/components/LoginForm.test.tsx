@@ -7,16 +7,16 @@ import userEvent from '@testing-library/user-event';
 import { screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-vi.mock('../services', () => ({
+vi.mock('../../services', () => ({
   loginService: vi.fn(),
   logoutService: vi.fn(),
 }));
 
 import { renderWithProviders } from '@/test-utils/render';
 
-import { loginService } from '../services';
-import type { ILoginResponse } from '../types';
-import { LoginForm } from './LoginForm';
+import { loginService } from '../../services';
+import type { ILoginResponse } from '../../types';
+import { LoginForm } from '../../components/LoginForm';
 
 const mockedLogin = vi.mocked(loginService);
 

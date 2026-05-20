@@ -5,7 +5,7 @@ description: Write Vitest + React Testing Library unit tests for a feature's sch
 
 # Testing Patterns (TanStack variant)
 
-The scaffolded project ships Vitest + React Testing Library wired into [vite.config.ts](../../../vite.config.ts). Tests are co-located with the file under test (`foo.ts` → `foo.test.ts`). Run with `pnpm test` (CI) or `pnpm test:watch` (dev).
+The scaffolded project ships Vitest + React Testing Library wired into [vite.config.ts](../../../vite.config.ts). Tests are organized in `__tests__` folders that mirror the source structure (`src/` layout mirrors in `__tests__/` layout). Run with `pnpm test` (CI) or `pnpm test:watch` (dev).
 
 ## File map
 
@@ -14,21 +14,32 @@ src/
 ├── test-utils/
 │   └── render.tsx          createTestQueryClient, createWrapper, renderWithProviders
 └── features/<feature>/
-    ├── utils.test.ts            Zod schema validation tests
-    ├── services.test.ts         service-layer tests with mocked axios
-    ├── hooks/use<Feature>.test.tsx   hook tests with createWrapper
-    └── components/<X>.test.tsx       component tests with renderWithProviders
+    ├── __tests__/
+    │   ├── components/
+    │   │   └── <X>.test.tsx          component tests with renderWithProviders
+    │   ├── hooks/
+    │   │   └── use<Feature>.test.tsx  hook tests with createWrapper
+    │   ├── services.test.ts           service-layer tests with mocked axios
+    │   └── utils.test.ts              Zod schema validation tests
+    ├── components/
+    │   └── <X>.tsx                    source components
+    ├── hooks/
+    │   └── use<Feature>.ts            source hooks
+    ├── types.ts                       TypeScript interfaces/types
+    ├── utils.ts                       Zod schemas & utilities
+    ├── services.ts                    API service functions
+    └── index.tsx                      feature exports
 ```
 
 ## The four kinds of test (one per layer)
 
 Pick the layer you're testing and copy the matching pattern. **A feature is well-tested when every layer has tests** — schema, service, hook, component.
 
-### 1. Schema (`utils.test.ts`) — fastest, no React
+### 1. Schema (`__tests__/utils.test.ts`) — fastest, no React
 
 ```ts
 import { describe, expect, it } from 'vitest';
-import { loginSchema } from './utils';
+import { loginSchema } from '../../utils';
 
 it('rejects short usernames', () => {
   const r = loginSchema.safeParse({ username: 'a', password: 'sekrit' });
@@ -41,7 +52,7 @@ it('rejects short usernames', () => {
 
 Use `safeParse` rather than `parse` so failures don't throw — you assert against the issues array. Cover happy path, each branch of `.refine()`, and any boundary conditions (min/max lengths).
 
-### 2. Service (`services.test.ts`) — mock the axios instance once
+### 2. Service (`__tests__/services.test.ts`) — mock the axios instance once
 
 ```ts
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -58,7 +69,7 @@ vi.mock('@/api/axiosInstance', () => ({
 
 import axiosInstance from '@/api/axiosInstance';
 import { ENDPOINTS } from '@/constants/endPoints';
-import { loginService } from './services';
+import { loginService } from '../../services';
 
 const mockedPost = vi.mocked(axiosInstance.post);
 beforeEach(() => vi.clearAllMocks());
@@ -86,20 +97,20 @@ Key points:
 - `vi.mocked(...)` keeps full type inference on the mocked methods.
 - One assertion per behaviour: assert on the call shape AND the returned value.
 
-### 3. Hook (`hooks/useX.test.tsx`) — `renderHook` + `createWrapper`
+### 3. Hook (`__tests__/hooks/useLogin.test.tsx`) — `renderHook` + `createWrapper`
 
 ```tsx
 import { renderHook, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-vi.mock('../services', () => ({
+vi.mock('../../services', () => ({
   loginService: vi.fn(),
   logoutService: vi.fn(),
 }));
 
 import { createWrapper } from '@/test-utils/render';
-import { loginService } from '../services';
-import { useLogin } from './useLogin';
+import { loginService } from '../../services';
+import { useLogin } from '../../hooks/useLogin';
 
 const mockedLogin = vi.mocked(loginService);
 beforeEach(() => vi.clearAllMocks());
@@ -122,21 +133,21 @@ Key points:
 - `createWrapper()` returns a fresh `QueryClient` per call — no cross-test leakage.
 - Always `await waitFor(...)` against terminal state (`isSuccess`/`isError`) before asserting on `data`/`error`. Mutations are async.
 
-### 4. Component (`components/X.test.tsx`) — `renderWithProviders` + user-event
+### 4. Component (`__tests__/components/LoginForm.test.tsx`) — `renderWithProviders` + user-event
 
 ```tsx
 import userEvent from '@testing-library/user-event';
 import { screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-vi.mock('../services', () => ({
+vi.mock('../../services', () => ({
   loginService: vi.fn(),
   logoutService: vi.fn(),
 }));
 
 import { renderWithProviders } from '@/test-utils/render';
-import { loginService } from '../services';
-import { LoginForm } from './LoginForm';
+import { loginService } from '../../services';
+import { LoginForm } from '../../components/LoginForm';
 
 const mockedLogin = vi.mocked(loginService);
 beforeEach(() => vi.clearAllMocks());
@@ -185,11 +196,11 @@ Key points:
 
 ## Reference tests
 
-The scaffolded project ships working examples at `src/features/login/`:
+The scaffolded project ships working examples at `src/features/login/__tests__/`:
 
-- [`utils.test.ts`](../../../src/features/login/utils.test.ts) — schema
-- [`services.test.ts`](../../../src/features/login/services.test.ts) — service with axios mock
-- [`hooks/useLogin.test.tsx`](../../../src/features/login/hooks/useLogin.test.tsx) — hook with `createWrapper`
-- [`components/LoginForm.test.tsx`](../../../src/features/login/components/LoginForm.test.tsx) — component with `renderWithProviders`
+- [`utils.test.ts`](../../../src/features/login/__tests__/utils.test.ts) — schema
+- [`services.test.ts`](../../../src/features/login/__tests__/services.test.ts) — service with axios mock
+- [`hooks/useLogin.test.tsx`](../../../src/features/login/__tests__/hooks/useLogin.test.tsx) — hook with `createWrapper`
+- [`components/LoginForm.test.tsx`](../../../src/features/login/__tests__/components/LoginForm.test.tsx) — component with `renderWithProviders`
 
 Copy the shape when testing a new feature.

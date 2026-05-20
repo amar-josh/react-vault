@@ -5,7 +5,7 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import { LOGIN_FORM_DEFAULT_VALUES, MIN_USERNAME_LENGTH, loginSchema } from './utils';
+import { LOGIN_FORM_DEFAULT_VALUES, MIN_USERNAME_LENGTH, loginSchema } from '../../utils';
 
 describe('loginSchema', () => {
   it('accepts valid credentials', () => {
