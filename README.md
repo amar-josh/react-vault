@@ -10,7 +10,7 @@ Every new BFSI app scaffolds from this. It bakes in the security, auth, audit, e
 
 Run one command and you have a production-ready React app with:
 
-- **React 18 + Vite 5 + TypeScript (strict)** — fast dev loop, modern bundling
+- **React 19 + Vite 5 + TypeScript (strict)** — fast dev loop, modern bundling
 - **Tailwind CSS + shadcn/ui** — accessible primitives, components owned in-repo
 - **React Hook Form + Zod** — type-inferred forms with runtime validation
 - **Choice of state-mgmt**: RTK Query _or_ TanStack Query — pick at scaffold time
