@@ -53,7 +53,7 @@ src/
 Variant-specific:
 
 - **RTK Query**: `src/axiosconfig/` (instance + interceptor + baseQuery), `src/redux/` (store + rootReducer + reduxHooks + invalidateCacheMiddleware)
-- **TanStack Query**: `src/api/` (axiosInstance + http + queryClient), `src/services/` (typed service methods)
+- **TanStack Query**: `src/api/` (axiosInstance + http + queryClient), `src/constants/` (endPoints + statusCodes), `src/features/<feature>/` (services.ts + hooks/ + types.ts + utils.ts (Zod) + components/), `src/components/common/` (FormInput + other RHF helpers). Reference feature: `src/features/login/`.
 
 ## Claude skills available
 
@@ -62,8 +62,9 @@ Run `/skills` or open `.claude/skills/<name>/SKILL.md` directly. Reference skill
 **Always available** (from the toolkit): `/bfsi-feature`, `/bfsi-form`, `/bfsi-pii-field`, `/bfsi-api-endpoint`, `/bfsi-compliance-check`, `/bfsi-commit`, `/bfsi-doctor`, `/bfsi-onboarding`, `/bfsi-review`, `/bfsi-audit`.
 
 **Variant-specific** (in `.claude/skills/`):
-- RTK: `axios-auth`, `constants-organization`, `redux-store-integration`, `rtk-query-api`
-- TanStack: `axios-auth`, `constants-organization`, `tanstack-services`, `query-client-setup`
+
+- RTK: `axios-auth`, `constants-organization`, `redux-store-integration`, `rtk-query-api`, `testing-patterns`
+- TanStack: `axios-auth`, `constants-organization`, `tanstack-services`, `query-client-setup`, `testing-patterns`
 
 ## Auto-review on Stop
 

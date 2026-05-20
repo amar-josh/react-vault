@@ -39,6 +39,24 @@ Interactive prompts:
 ? Initialise git + install deps › Yes
 ```
 
+### Running the local CLI from this repo
+
+If you are developing or using the CLI locally from this repository, use these commands from the repo root:
+
+```bash
+pnpm install
+pnpm --filter @your-real-scope/create-app run build
+node ./packages/cli/bin/create-app.js my-bank-app
+```
+
+Or with pnpm exec:
+
+```bash
+pnpm --filter @your-real-scope/create-app exec -- node bin/create-app.js my-bank-app
+```
+
+> Do not use `npx ./packages/cli/bin/create-app.js` because `npx` will treat the path like a package name and fail.
+
 Then:
 
 ```bash

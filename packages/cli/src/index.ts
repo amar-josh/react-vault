@@ -192,6 +192,10 @@ async function scaffold(opts: ScaffoldOptions): Promise<void> {
   if (await fs.pathExists(variantDir)) {
     await fs.copy(variantDir, target, { overwrite: true, filter: buildFilter(variantDir) });
   }
+  // Husky hooks must be executable on Unix. fs.copy preserves source modes,
+  // but those modes can be lost if the package was published from Windows.
+  // Force 0755 here so the hooks fire on Linux/macOS regardless.
+  await chmodHuskyHooks(target);
   s.stop('Template files copied');
 
   // 3. Merge package.partial.json from variant into package.json, then delete it
@@ -251,6 +255,23 @@ async function scaffold(opts: ScaffoldOptions): Promise<void> {
     } catch (err) {
       s.stop(pc.yellow('git init failed (continuing anyway)'));
       console.warn(pc.dim((err as Error).message));
+    }
+  }
+}
+
+async function chmodHuskyHooks(target: string): Promise<void> {
+  const huskyDir = path.join(target, '.husky');
+  if (!(await fs.pathExists(huskyDir))) {
+    return;
+  }
+  const entries = await fs.readdir(huskyDir);
+  for (const e of entries) {
+    if (e.startsWith('.') || e === '_') {
+      continue;
+    }
+    const p = path.join(huskyDir, e);
+    if ((await fs.stat(p)).isFile()) {
+      await fs.chmod(p, 0o755);
     }
   }
 }
