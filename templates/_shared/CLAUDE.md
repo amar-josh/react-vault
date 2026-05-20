@@ -4,7 +4,7 @@ BFSI React project scaffolded from `create-app`. This file is what Claude reads 
 
 ## Stack (so you don't have to read configs)
 
-- **React 18** + **Vite 5** + **TypeScript strict**
+- **React 19** + **Vite 5** + **TypeScript strict**
 - **Tailwind CSS** + **shadcn/ui** (components owned in `src/components/ui/`)
 - **React Hook Form** + **Zod** for forms
 - **react-router-dom v6** with `<ProtectedRoute permission="...">` guards
