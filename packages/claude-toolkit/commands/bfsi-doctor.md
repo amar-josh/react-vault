@@ -9,7 +9,7 @@ You are running a health check. Don't delegate — execute the checks directly.
 
 ## Checks
 
-Run each check, report status (✅ / ⚠️ / ❌), and remediation for any failures.
+Run each check, report status (✅ / ⚠️ / ❌), and remediation for any failures. Within each section, checks are numbered from 1; cross-section references use `<Section> #<n>` (e.g. `Project config #1`).
 
 ### Environment
 
@@ -20,48 +20,56 @@ Run each check, report status (✅ / ⚠️ / ❌), and remediation for any fail
 
 ### Project config
 
-5. **`.claude/settings.json` exists** and enables the BFSI toolkit plugin.
-6. **`.env.local.sample` exists** with placeholders for VITE\_\* vars.
-7. **`tsconfig.json`** extends `tsconfig.base.json` (or has equivalent strict settings).
-8. **`.eslintrc.cjs`** present (or `eslint.config.js`).
-9. **`.husky/pre-commit`** present and executable.
-10. **`.github/workflows/ci.yml`** present.
+1. **BFSI toolkit is wired** — either as a plugin OR inlined. Pass if EITHER:
+
+   - `.claude/settings.json` has `enabledPlugins` including `"toolkit@react-vault"` (plugin mode), OR
+   - `.claude/agents/bfsi-pr-reviewer.md` exists alongside `.claude/skills/bfsi-feature/SKILL.md` and `.claude/hooks/scripts/block-destructive.sh` (inlined mode, set up by `create-app`).
+
+   Fail only if neither path resolves. Both modes are valid; the CLI's `inlineToolkitInto()` deletes `enabledPlugins` at scaffold time so scaffolded projects are in inlined mode by default.
+
+2. **`.env.local.sample` exists** with placeholders for VITE\_\* vars.
+3. **`tsconfig.json`** extends `tsconfig.base.json` (or has equivalent strict settings).
+4. **`.eslintrc.cjs`** present (or `eslint.config.js`).
+5. **`.husky/pre-commit`** present and executable.
+6. **`.github/workflows/ci.yml`** present.
 
 ### Dependencies
 
-11. **Critical packages installed:**
+1. **Critical packages installed:**
 
-    - `react`, `react-dom`
-    - `@react-vault/core` (or link: ref to local workspace)
-    - `@react-vault/ui`
-    - One of: `@reduxjs/toolkit` OR `@tanstack/react-query`
-    - `react-hook-form`, `zod`
-    - `react-router-dom`
-    - `react-i18next`
-    - `tailwindcss`, `autoprefixer`, `postcss`
-    - `vitest`, `@testing-library/react`
+   - `react`, `react-dom`
+   - `@react-vault/core` (or link: ref to local workspace)
+   - `@react-vault/ui`
+   - One of: `@reduxjs/toolkit` OR `@tanstack/react-query`
+   - `react-hook-form`, `zod`
+   - `react-router-dom`
+   - `react-i18next`
+   - `tailwindcss`, `autoprefixer`, `postcss`
+   - `vitest`, `@testing-library/react`
 
-12. **No duplicate React** — `pnpm why react` should show one version.
+2. **No duplicate React** — `pnpm why react` should show one version.
 
 ### BFSI conventions
 
-13. **`src/features/` exists** (or features live somewhere obvious).
-14. **`src/routes/ProtectedRoute.tsx`** exists.
-15. **i18n setup** — `src/i18n/i18n.ts` exists and `App.tsx` wraps in `I18nextProvider`.
-16. **Audit endpoint configured** — `VITE_AUDIT_ENDPOINT` in `.env.local.sample`.
-17. **Sentry stub configured** — `VITE_SENTRY_DSN` placeholder present.
+1. **`src/features/` exists** (or features live somewhere obvious).
+2. **`src/routes/ProtectedRoute.tsx`** exists.
+3. **i18n setup** — `src/i18n/i18n.ts` exists and `App.tsx` wraps in `I18nextProvider`.
+4. **Audit endpoint configured** — `VITE_AUDIT_ENDPOINT` in `.env.local.sample`.
+5. **Sentry stub configured** — `VITE_SENTRY_DSN` placeholder present.
 
 ### Claude toolkit
 
-18. **`/hooks` registered** — at least 8 hooks visible (run via Bash if possible; otherwise describe to user).
-19. **`/plugin` shows `toolkit` enabled.**
-20. **At least 8 skills available** — list via `ls .claude/skills` if user-level, or via `/plugin` for plugin-level.
+1. **Hook events wired** — `.claude/settings.json` (inlined mode) or the plugin's `hooks.json` carries at least these events: `PreToolUse`, `PostToolUse`, `SessionStart`, `Stop`, `PreCompact`, `PostCompact`, `SubagentStart`, `SubagentStop`. Fewer than 6 → fail.
+2. **Toolkit reachable** — covered by `Project config #1`. Don't double-fail this if that check already failed; otherwise re-state pass/fail here for clarity in the section summary.
+3. **At least 10 skills available** — count `.claude/skills/*/SKILL.md` (inlined mode) or list via `/plugin` (plugin mode). Toolkit ships 15 skills as of this writing; under 10 means an incomplete install.
+4. **All agents referenced by `bfsi-pr-reviewer` exist** — read `.claude/agents/bfsi-pr-reviewer.md`, grep for `bfsi-*-reviewer` / `bfsi-*-scanner` / `bfsi-*-auditor` names, confirm each has a matching file in `.claude/agents/`. (Catches the orchestrator-dispatch-to-missing-agent class of bug.)
+5. **All skills referenced by `bfsi-scaffold` exist** — same check for `.claude/commands/bfsi-scaffold.md`'s route table.
 
 ### Security
 
-21. **No `.env` files committed** — `git ls-files | grep -E '\.env(\..*)?$' | grep -v 'sample\|example'` should be empty.
-22. **No node_modules tracked** — `git ls-files | grep node_modules` should be empty.
-23. **No PEM/key files tracked** — `git ls-files | grep -E '\.(pem|key|p12|pfx)$'` should be empty.
+1. **No `.env` files committed** — `git ls-files | grep -E '\.env(\..*)?$' | grep -v 'sample\|example'` should be empty.
+2. **No node_modules tracked** — `git ls-files | grep node_modules` should be empty.
+3. **No PEM/key files tracked** — `git ls-files | grep -E '\.(pem|key|p12|pfx)$'` should be empty.
 
 ## Output
 

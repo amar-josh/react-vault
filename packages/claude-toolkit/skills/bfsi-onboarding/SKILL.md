@@ -13,7 +13,7 @@ This project was scaffolded from `@react-vault/react-starter`. It's a **Vite + R
 
 Stack:
 
-- **React 18** + **Vite 5** + **TypeScript strict**
+- **React 19** + **Vite 5** + **TypeScript strict**
 - **Tailwind CSS** + **shadcn/ui** (components owned in `src/components/ui/`)
 - **React Hook Form** + **Zod** for forms
 - **RTK Query** OR **TanStack Query** for data fetching (check `package.json`)
@@ -34,10 +34,10 @@ src/
 └── main.tsx                # Entry point
 ```
 
-Security & audit primitives come from npm packages:
+Security & audit primitives come from two workspace packages (npm scope `@<scope>` — `@react-vault` by default, swappable for white-label deployments):
 
-- `@react-vault/core` — encryption, PII utils, audit client, axios factory, auth helpers
-- `@react-vault/ui` — Tailwind + shadcn + BFSI compositions (PIIMaskedDisplay, ConfirmModal, etc.)
+- `@<scope>/core` — `encryption/`, `pii/`, `audit/`, `http/`, `auth/`, `storage/`, `compliance/`. Sub-path imports for tree-shaking: `import { aesgcm } from '@<scope>/core/encryption'`.
+- `@<scope>/ui` — `PIIMaskedDisplay` (ships today). Planned in v0.2: `<PCITokenizedCardInput>`, `<BFSIErrorBoundary>`, `<ConfirmModal>`, `<SecureFormField>`. Until then, write project-local equivalents under `src/shared/` and flag plain card inputs in review.
 
 ## Day-to-day workflows
 
@@ -72,15 +72,15 @@ Use `/bfsi-commit` — generates audit-friendly Conventional Commits message.
 2. **All API responses are Zod-parsed**: runtime safety. Never trust the network shape.
 3. **All mutations are audited**: use `useAuditedMutation` (RTK) or wrap with `useAuditedAction` (TanStack).
 4. **All routes are protected**: `<ProtectedRoute permission="...">`. Defaults to authenticated-only if `permission` omitted, but explicit is better.
-5. **PII never enters localStorage**: use `secureStorage` from `@react-vault/core/storage` (memory-first, sessionStorage fallback, encrypted IndexedDB option).
-6. **No card data in HTML inputs**: use `<PCITokenizedCardInput>` from `@react-vault/ui`.
+5. **PII never enters localStorage**: use `secureStorage` from `@<scope>/core/storage` (memory-first, sessionStorage fallback, encrypted IndexedDB option).
+6. **No card data in HTML inputs**: `<PCITokenizedCardInput>` is planned for `@<scope>/ui` v0.2. Until then, flag any plain card input in review and keep card capture off the SPA where possible (redirect to PCI-scoped iframe).
 7. **No `any` types**: types flow from Zod schemas.
 8. **All user-facing strings via `t()`**: never inline. Even error messages.
 9. **Conventional Commits with BFSI types**: see `/bfsi-commit`. `security` and `compliance` are extra types beyond standard set.
 
 ## The Claude toolkit
 
-The `.claude/` directory in this project enables a plugin called `toolkit`. Run `/hooks` to see registered hooks (file protection, secret scanner, formatter, PII scanner, etc.). Run `/plugin` to see the toolkit. Run `/bfsi-doctor` to verify everything's wired up.
+The `.claude/` directory in this project carries the BFSI toolkit's agents, skills, commands, and hooks — inlined at scaffold time (so it works offline, no plugin install needed). Run `/hooks` to see registered hooks (file protection, secret scanner, formatter, PII scanner, etc.). Run `/agents` to see the BFSI agents. Run `/bfsi-doctor` to verify everything's wired up.
 
 Hooks may block you from:
 
@@ -106,5 +106,5 @@ These are not personal — they protect every dev from a class of mistake that's
 - ❌ Don't trust client-side permission checks alone — backend re-checks every API call.
 - ❌ Don't use `localStorage` for tokens. Use the auth module's storage strategy.
 - ❌ Don't use `dangerouslySetInnerHTML` without sanitisation.
-- ❌ Don't write your own crypto — use `@react-vault/core/encryption`.
+- ❌ Don't write your own crypto — use `@<scope>/core/encryption`.
 - ❌ Don't commit to `main` directly — always via PR.
