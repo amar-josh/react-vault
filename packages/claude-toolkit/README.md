@@ -13,7 +13,7 @@ Built per the official [Claude Code spec](https://code.claude.com/docs/) — ski
 ```text
 toolkit/
 ├── plugin.json                  Plugin manifest (engines.claude-code >= 2.1.85)
-├── skills/                      16 skills (action + reference)
+├── skills/                      19 skills (action + reference)
 ├── agents/                      8 specialised agents
 ├── hooks/
 │   ├── hooks.json               17 hook entries across 9 event types
@@ -27,26 +27,36 @@ toolkit/
 
 ---
 
-## Skills (16)
+## Skills (19)
 
-| Skill                   | Style     | Purpose                                                                                                                         |
-| ----------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| `bfsi-feature`          | action    | Scaffold feature module (api + containers + components + routes + tests + i18n)                                                 |
-| `bfsi-api-endpoint`     | action    | Add API endpoint — variant-aware (RTK Query OR TanStack)                                                                        |
-| `bfsi-form`             | action    | RHF + Zod form with BFSI defaults                                                                                               |
-| `bfsi-pii-field`        | action    | Wrap field with `<PIIMaskedDisplay>` + audit                                                                                    |
-| `bfsi-protected-route`  | action    | Add route with `<ProtectedRoute permission="...">`                                                                              |
-| `bfsi-audit-action`     | action    | Wrap button/action with `useAuditedAction` (optional MFA)                                                                       |
-| `bfsi-confirm-modal`    | action    | Confirmation modal with optional MFA step                                                                                       |
-| `bfsi-data-table`       | action    | Access-controlled table with PII-masked columns                                                                                 |
-| `bfsi-i18n-key`         | action    | Add i18n key across all locales (en + hi + ...)                                                                                 |
-| `bfsi-compliance-check` | action    | OWASP + RBI + PCI checklist on the current diff                                                                                 |
-| `bfsi-commit`           | action    | Audit-friendly Conventional Commits with BFSI types                                                                             |
-| `bfsi-onboarding`       | reference | New-dev orientation (auto-loads)                                                                                                |
-| `bfsi-encrypt-helper`   | reference | Web Crypto usage patterns                                                                                                       |
-| `bfsi-test-pattern`     | reference | BFSI testing patterns (security, a11y, audit, idempotency)                                                                      |
-| `bfsi-error-message`    | reference | Safe error message patterns (UI / logs / Sentry tiers)                                                                          |
-| `bfsi-regulation-quote` | reference | Returns verbatim text of cited RBI / PCI / IRDAI / OWASP / Claude Code sections from `references/` — makes citations verifiable |
+| Skill                       | Style     | Purpose                                                                                                                                       |
+| --------------------------- | --------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| `bfsi-feature`              | action    | Scaffold feature module (api + containers + components + routes + tests + i18n)                                                               |
+| `bfsi-api-endpoint`         | action    | Add API endpoint — variant-aware (RTK Query OR TanStack)                                                                                      |
+| `bfsi-form`                 | action    | RHF + Zod form with BFSI defaults                                                                                                             |
+| `bfsi-pii-field`            | action    | Wrap field with `<PIIMaskedDisplay>` + audit                                                                                                  |
+| `bfsi-protected-route`      | action    | Add route with `<ProtectedRoute permission="...">`                                                                                            |
+| `bfsi-audit-action`         | action    | Wrap button/action with `useAuditedAction` (optional MFA)                                                                                     |
+| `bfsi-confirm-modal`        | action    | Confirmation modal with optional MFA step                                                                                                     |
+| `bfsi-data-table`           | action    | Access-controlled table with PII-masked columns                                                                                               |
+| `bfsi-i18n-key`             | action    | Add i18n key across all locales (en + hi + ...)                                                                                               |
+| `bfsi-compliance-check`     | action    | OWASP + RBI + PCI checklist on the current diff                                                                                               |
+| `bfsi-commit`               | action    | Audit-friendly Conventional Commits with BFSI types                                                                                           |
+| `bfsi-onboarding`           | reference | New-dev orientation (auto-loads)                                                                                                              |
+| `bfsi-encrypt-helper`       | reference | Web Crypto usage patterns                                                                                                                     |
+| `bfsi-test-pattern`         | reference | BFSI testing patterns (security, a11y, audit, idempotency)                                                                                    |
+| `bfsi-error-message`        | reference | Safe error message patterns (UI / logs / Sentry tiers)                                                                                        |
+| `bfsi-regulation-quote`     | reference | Returns verbatim text of cited RBI / PCI / IRDAI / OWASP / Claude Code sections from `references/` — makes citations verifiable               |
+| `bfsi-perf-react`           | reference | React perf methodology — measure-first, memoisation rules, virtualisation, code splitting, bundle, re-render cascades, BFSI-specific concerns |
+| `bfsi-perf-virtualize-list` | action    | Wrap a list / table with `@tanstack/react-virtual` (preserves keys, sticky headers, a11y)                                                     |
+| `bfsi-perf-real-time`       | reference | WebSocket / SSE / polling patterns — `useSyncExternalStore`, rAF batching, backpressure, BFSI flow rates (ticker, balance, OTP, audit-tail)   |
+
+**Variant-specific perf skills** (shipped in `templates/<variant>/.claude/skills/perf-tuning/SKILL.md`, scaffolded into each project):
+
+| Variant        | Skill         | Covers                                                                                                                                  |
+| -------------- | ------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| RTK Query      | `perf-tuning` | `keepUnusedDataFor`, `refetchOnFocus`, polling, Reselect, store middleware checks, prefetching, optimistic updates                      |
+| TanStack Query | `perf-tuning` | `staleTime`/`gcTime`, `select`, structural sharing, query-key factories, `useInfiniteQuery` + virtualisation, persisters, Suspense mode |
 
 **Action** skills set `disable-model-invocation: true` — invoke with `/bfsi-foo`.
 **Reference** skills auto-load when their description matches the user's request.
