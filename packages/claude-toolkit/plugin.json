@@ -26,6 +26,6 @@
     "commands": "./commands"
   },
   "engines": {
-    "claude-code": ">=2.1.0"
+    "claude-code": ">=2.1.85"
   }
 }

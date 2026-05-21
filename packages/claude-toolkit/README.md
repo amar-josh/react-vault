@@ -12,38 +12,41 @@ Built per the official [Claude Code spec](https://code.claude.com/docs/) — ski
 
 ```text
 toolkit/
-├── plugin.json                  Plugin manifest
-├── skills/                      15 skills (action + reference)
+├── plugin.json                  Plugin manifest (engines.claude-code >= 2.1.85)
+├── skills/                      16 skills (action + reference)
 ├── agents/                      8 specialised agents
 ├── hooks/
 │   ├── hooks.json               17 hook entries across 9 event types
 │   └── scripts/                 Hook scripts (bash + 1 type:agent)
 ├── commands/                    4 orchestrator commands
+├── references/                  5 quoted regulator / standard references
+│                                (RBI Annex I, PCI v4.0, IRDAI 2023, OWASP, Claude Code changelog)
 └── scripts/
     └── validate-plugin.mjs      Integrity validator (no npm deps)
 ```
 
 ---
 
-## Skills (15)
+## Skills (16)
 
-| Skill                   | Style     | Purpose                                                                         |
-| ----------------------- | --------- | ------------------------------------------------------------------------------- |
-| `bfsi-feature`          | action    | Scaffold feature module (api + containers + components + routes + tests + i18n) |
-| `bfsi-api-endpoint`     | action    | Add API endpoint — variant-aware (RTK Query OR TanStack)                        |
-| `bfsi-form`             | action    | RHF + Zod form with BFSI defaults                                               |
-| `bfsi-pii-field`        | action    | Wrap field with `<PIIMaskedDisplay>` + audit                                    |
-| `bfsi-protected-route`  | action    | Add route with `<ProtectedRoute permission="...">`                              |
-| `bfsi-audit-action`     | action    | Wrap button/action with `useAuditedAction` (optional MFA)                       |
-| `bfsi-confirm-modal`    | action    | Confirmation modal with optional MFA step                                       |
-| `bfsi-data-table`       | action    | Access-controlled table with PII-masked columns                                 |
-| `bfsi-i18n-key`         | action    | Add i18n key across all locales (en + hi + ...)                                 |
-| `bfsi-compliance-check` | action    | OWASP + RBI + PCI checklist on the current diff                                 |
-| `bfsi-commit`           | action    | Audit-friendly Conventional Commits with BFSI types                             |
-| `bfsi-onboarding`       | reference | New-dev orientation (auto-loads)                                                |
-| `bfsi-encrypt-helper`   | reference | Web Crypto usage patterns                                                       |
-| `bfsi-test-pattern`     | reference | BFSI testing patterns (security, a11y, audit, idempotency)                      |
-| `bfsi-error-message`    | reference | Safe error message patterns (UI / logs / Sentry tiers)                          |
+| Skill                   | Style     | Purpose                                                                                                                         |
+| ----------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| `bfsi-feature`          | action    | Scaffold feature module (api + containers + components + routes + tests + i18n)                                                 |
+| `bfsi-api-endpoint`     | action    | Add API endpoint — variant-aware (RTK Query OR TanStack)                                                                        |
+| `bfsi-form`             | action    | RHF + Zod form with BFSI defaults                                                                                               |
+| `bfsi-pii-field`        | action    | Wrap field with `<PIIMaskedDisplay>` + audit                                                                                    |
+| `bfsi-protected-route`  | action    | Add route with `<ProtectedRoute permission="...">`                                                                              |
+| `bfsi-audit-action`     | action    | Wrap button/action with `useAuditedAction` (optional MFA)                                                                       |
+| `bfsi-confirm-modal`    | action    | Confirmation modal with optional MFA step                                                                                       |
+| `bfsi-data-table`       | action    | Access-controlled table with PII-masked columns                                                                                 |
+| `bfsi-i18n-key`         | action    | Add i18n key across all locales (en + hi + ...)                                                                                 |
+| `bfsi-compliance-check` | action    | OWASP + RBI + PCI checklist on the current diff                                                                                 |
+| `bfsi-commit`           | action    | Audit-friendly Conventional Commits with BFSI types                                                                             |
+| `bfsi-onboarding`       | reference | New-dev orientation (auto-loads)                                                                                                |
+| `bfsi-encrypt-helper`   | reference | Web Crypto usage patterns                                                                                                       |
+| `bfsi-test-pattern`     | reference | BFSI testing patterns (security, a11y, audit, idempotency)                                                                      |
+| `bfsi-error-message`    | reference | Safe error message patterns (UI / logs / Sentry tiers)                                                                          |
+| `bfsi-regulation-quote` | reference | Returns verbatim text of cited RBI / PCI / IRDAI / OWASP / Claude Code sections from `references/` — makes citations verifiable |
 
 **Action** skills set `disable-model-invocation: true` — invoke with `/bfsi-foo`.
 **Reference** skills auto-load when their description matches the user's request.
@@ -71,6 +74,20 @@ Defined in `hooks/hooks.json`. Categories:
 - **Observability** — `audit-prompt` (opt-in via `BFSI_AUDIT_PROMPTS=1`, scrubs PII before writing JSONL).
 - **Post-turn** (`Stop`) — `verify-clean` (typecheck + quick secret/PII grep, async) and a sophisticated `type: agent` review gate that classifies the diff for P0/P1/P2 findings and uses `AskUserQuestion` to gate the stop.
 - **Orchestration** — `subagent-start` / `subagent-stop` (counter + duration + cost ledger; failures surface via `additionalContext` so the orchestrator can decide on retry).
+
+## Regulator / standard references (5)
+
+Quoted-text reference files under [`references/`](references/) — the toolkit's agents cite from these, and `bfsi-regulation-quote` reads from them so reviewers can verify a citation without leaving the project.
+
+| File                                | Covers                                                                                    |
+| ----------------------------------- | ----------------------------------------------------------------------------------------- |
+| `rbi-annexure-i.md`                 | RBI Cyber Security Framework in Banks — Annex I (24 baseline sections), 2016 notification |
+| `pci-dss-v4.0-frontend-relevant.md` | PCI-DSS v4.0 / v4.0.1, frontend-relevant requirements + v3.2.1 mapping                    |
+| `irdai-cybersec-guidelines.md`      | IRDAI Information & Cyber Security Guidelines, 2023 (supersedes 2017 circular)            |
+| `owasp-top-10-2024.md`              | OWASP Top 10 — 2025 edition (current), with 2021 cross-references                         |
+| `claude-code-changelog.md`          | Claude Code feature-pin table — which version added which feature the toolkit depends on  |
+
+Citation grammar: `RBI Annexure I §<n.m>`, `PCI-DSS v4.0 §<n.m.p>`, `IRDAI ICS §<n.m>`, `OWASP A<NN>:<year>`, `claude-code v<X.Y.Z>`. The `bfsi-regulation-quote` skill auto-loads on any of these patterns.
 
 ## Commands (4)
 

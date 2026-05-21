@@ -106,5 +106,5 @@ For state-changing actions, the confirm modal pairs with `useAuditedAction` (see
 
 - `references/confirm-modal.tpl.tsx` — project-local component template (generated on first use).
 - RBI Annexure I §6.x (Authentication) — MFA on sensitive operations.
-- PCI-DSS req 8.2.x — MFA on admin/sensitive flows.
+- PCI-DSS v4.0 §8.4.x / §8.5.x — MFA on admin/sensitive flows. (v3.2.1 §8.2.x — _which only covered unique IDs_ — was split: §8.2.x kept unique-ID, §8.3.x covers auth-factor strength, §8.4.x/§8.5.x cover MFA. See [`../../references/pci-dss-v4.0-frontend-relevant.md`](../../references/pci-dss-v4.0-frontend-relevant.md).)
 - WCAG 2.1 — Modal dialog ARIA pattern.

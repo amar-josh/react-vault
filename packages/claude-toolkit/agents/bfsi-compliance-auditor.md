@@ -25,43 +25,58 @@ The user will specify scope. If they say "compliance audit", default to **RBI An
 
 ### RBI Cyber Security Framework — Annexure I (Baseline)
 
-| Control                             | Frontend evidence                                          | Where to check                                    |
-| ----------------------------------- | ---------------------------------------------------------- | ------------------------------------------------- |
-| 1.x Network security                | (mostly backend)                                           | N/A — note in report                              |
-| 2.x Inventory & data classification | Codebase manifests PII fields                              | grep for PII patterns; `<PIIMaskedDisplay>` usage |
-| 3.x Logical access                  | Permission-gated routes                                    | `<ProtectedRoute permission="..">` audit          |
-| 4.x Encryption                      | Web Crypto usage                                           | `@react-vault/core/encryption` imports            |
-| 5.x Vulnerability management        | Dep update cadence, `pnpm audit`                           | check CI workflow                                 |
-| 6.x Authentication                  | JWT + idle timeout + MFA                                   | `tokenManager`, `<ProtectedRoute idleTimeout>`    |
-| 7.x Application security            | Input validation, output encoding                          | Zod parsing, `dangerouslySetInnerHTML` audit      |
-| 8.x Logging & monitoring            | Audit events, error logging                                | `useAuditedMutation` usage, audit endpoint        |
-| 9.x Customer education              | (mostly marketing)                                         | N/A                                               |
-| 10.x Incident response              | (mostly process)                                           | Error boundary + telemetry                        |
-| 11.x Phishing                       | Email auth (backend) + UI cues (no inline forms in emails) | N/A — note                                        |
-| 12.x Forensic readiness             | Audit log immutability                                     | check audit retention config                      |
+> Full verbatim text in [`references/rbi-annexure-i.md`](../references/rbi-annexure-i.md). Annex I has **24 numbered sections** (1–24), not 12. The mapping below covers the frontend-relevant subset.
+
+| §       | Section title                                       | Frontend evidence to look for                                                            | Where to check                                                          |
+| ------- | --------------------------------------------------- | ---------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| §1      | Inventory Management of Business IT Assets          | PII fields catalogued; data classification consistently applied                          | grep for PII variables; `<PIIMaskedDisplay>` usage; schema files        |
+| §2      | Preventing execution of unauthorised software       | `pnpm audit` clean; no untrusted CDN script tags; CSP `script-src` restricts origins     | `package.json`, `vite.config.ts` security headers, CI workflow          |
+| §6      | Application Security Life Cycle (ASLC)              | Secure coding (Zod parse, no `eval`, no `dangerouslySetInnerHTML`); OWASP-aware (§6.7)   | `bfsi-security-reviewer` output; `dangerouslySetInnerHTML` audit        |
+| §6.3    | Secure coding practices                             | No secrets in source                                                                     | `scan-secrets.sh` hook; `bfsi-security-reviewer` Pass 1                 |
+| §6.4    | Session management, audit trail, exception handling | Idle timeout, audit on state-change, sanitised error messages                            | `<ProtectedRoute idleTimeout>`, `useAuditedMutation`, error boundary    |
+| §6.7    | OWASP-driven defence-in-depth                       | OWASP Top 10 mappings; multi-layer protections                                           | [`references/owasp-top-10-2024.md`](../references/owasp-top-10-2024.md) |
+| §7      | Patch / Vulnerability / Change management           | Dependency updates current; `pnpm audit` clean; CI gates on new advisories               | `package.json`, CI workflow                                             |
+| §8      | User Access Control / Management                    | Permission-gated routes; least privilege; centralised auth; tokens never in localStorage | `<ProtectedRoute permission=...>`, `setAuthToken` at login              |
+| §8.4    | Centralised auth + MFA risk-based                   | MFA on sensitive actions                                                                 | `bfsi-confirm-modal --mfa`, `useAuditedAction --mfa`                    |
+| §9      | Authentication Framework for Customers              | Bank-to-customer identity verification cues                                              | Verified-merchant badges, anti-phishing UI                              |
+| §13     | Advanced Real-time Threat Defence                   | Anti-malware in CI; secure web gateways (backend)                                        | CI workflow; mostly backend                                             |
+| §15     | Data Leak prevention strategy                       | No PII to console / localStorage / URL / telemetry                                       | `scan-pii.sh` hook; `bfsi-pii-scanner` agent                            |
+| §16     | Maintenance, Monitoring & Analysis of Audit Logs    | Audit events emitted; correlated by request_id; PII-scrubbed before write                | `useAuditedMutation`, audit endpoint, `audit-prompt.sh` PII scrub       |
+| §17     | Audit Log settings                                  | Timestamp + source + destination + actor on every entry                                  | `auditClient` event shape                                               |
+| §18     | VA/PT & Red Team Exercises                          | Periodic VA/PT cadence for the frontend                                                  | Out of scope for the codebase; check release process                    |
+| §19     | Incident Response & Recovery                        | Error boundaries surface ref-codes; no stack traces in UI; alerting wired                | `bfsi-error-message` skill; Sentry / telemetry scrub                    |
+| §20     | Risk-based transaction monitoring                   | UI surfaces transactions for customer-side fraud checks; large-value alerts              | Notification slice; per-customer alert thresholds                       |
+| §23/§24 | Awareness (employee + customer)                     | In-product cues, security FAQ links                                                      | Backend / content team owns                                             |
 
 ### PCI-DSS v4.0 — frontend-relevant
 
-| Req    | What                           | Frontend check                                                |
-| ------ | ------------------------------ | ------------------------------------------------------------- |
-| 3.4    | No PAN in plaintext            | grep `card_number`, `cardNumber` in source — should be `null` |
-| 4.x    | Strong crypto in transit       | HSTS / TLS — check `vite.config` headers, deployment config   |
-| 6.2    | Vulnerabilities patched        | `pnpm audit` baseline                                         |
-| 6.4.1  | Application change management  | git workflow + PR review                                      |
-| 6.5.1  | Injection flaws                | Zod parsing, no `eval`, no string SQL                         |
-| 6.5.7  | XSS                            | no `dangerouslySetInnerHTML` unsanitised, CSP nonce           |
-| 6.5.10 | Broken auth                    | session controls, idle timeout, refresh race                  |
-| 8.2.x  | MFA on admin / sensitive flows | `<ConfirmModal mfa>` usage on admin actions                   |
-| 10.2.x | Audit trails                   | `useAuditedMutation` + `useAuditedAction` coverage            |
+> Full verbatim text in [`references/pci-dss-v4.0-frontend-relevant.md`](../references/pci-dss-v4.0-frontend-relevant.md). Note: v4.0 restructured many requirements vs v3.2.1; the table below uses **v4.0 numbering** (with v3.2.1 in brackets for legacy citations).
 
-### IRDAI (selected)
+| Req (v4.0)                     | What                                          | Frontend check                                                                       |
+| ------------------------------ | --------------------------------------------- | ------------------------------------------------------------------------------------ |
+| §3.4.1                         | PAN masked on display (max 6/4 visible)       | `<PIIMaskedDisplay type="card_last4">` on every card render                          |
+| §3.5.1 _(was §3.4)_            | PAN unreadable when stored                    | Tokens / PCITokenizedCardInput (v0.2) — never raw PAN in the SPA                     |
+| §4.2.1                         | Strong cryptography in transit                | HSTS / TLS — `vite.config` security headers, deployment config                       |
+| §6.2.1                         | Bespoke / custom software developed securely  | OWASP-aware coding; `bfsi-architect` + `bfsi-security-reviewer`                      |
+| §6.2.4 _(was §6.5.1/.7/.10)_   | Injection / XSS / broken auth defences        | Zod parsing on response, no `dangerouslySetInnerHTML`, no `eval`, session controls   |
+| §6.3.3                         | Patch components within 1 month for critical  | `pnpm audit` in CI; Renovate / Dependabot                                            |
+| §6.4.1 / §6.4.3                | Public-facing web app + JavaScript on payment | CSP `script-src`, SRI on payment-page scripts; payment-iframe approach               |
+| §8.2.1 / §8.2.2                | Unique user IDs                               | No shared accounts; per-user JWT                                                     |
+| §8.3.x                         | Authentication factor strength                | Backend-enforced; UI surfaces password policy                                        |
+| §8.4.x / §8.5.x _(was §8.2.x)_ | MFA on admin / sensitive flows                | `bfsi-confirm-modal --mfa`; `useAuditedAction --mfa`                                 |
+| §10.2.1.x _(was §10.2.x)_      | Audit trail event taxonomy                    | `useAuditedMutation`, `useAuditedAction`; event names per `audit-events.md` taxonomy |
+| §11.6.1                        | Payment-page tamper / change detection        | Hash-pin payment-page DOM/scripts; backend webhook on change                         |
 
-| Section | What                 | Frontend check                 |
-| ------- | -------------------- | ------------------------------ |
-| 4.1     | Access control       | RBAC via `<CanAccess>`         |
-| 4.4     | Data protection      | PII masking, encrypted storage |
-| 5.2     | Application security | Same as PCI 6.5.x              |
-| 5.4     | Audit trails         | Audit events                   |
+### IRDAI Information & Cyber Security Guidelines, 2023 (selected)
+
+> Full text in [`references/irdai-cybersec-guidelines.md`](../references/irdai-cybersec-guidelines.md). The 2023 guidelines (IRDAI/GA&HR/GDL/MISC/88/04/2023, dated 24 April 2023) supersede the 2017 circular. The 2023 numbering is `§1.x` (General Guidelines) and `§2.x` (Security Domain Policies, 1-24). Legacy citations (§4.1, §4.4, §5.2, §5.4) from the 2017 era are mapped to the 2023 anchors.
+
+| 2023 §        | Title (2023)                             | Frontend check                                   | Legacy citation (2017) |
+| ------------- | ---------------------------------------- | ------------------------------------------------ | ---------------------- |
+| §2.3          | Access control                           | RBAC; permission-gated routes; least privilege   | §4.1                   |
+| §2.1 + §3.5   | Data Classification + Data Privacy (PII) | PII masking, encrypted storage, no PII in URL    | §4.4                   |
+| §2.5 / §3.1.2 | Application security standards           | Same as PCI v4.0 §6.2.4 — injection / XSS / auth | §5.2                   |
+| §2.16         | Monitoring, Logging & Assessment         | Audit events, log retention (Cert-In: 180 days)  | §5.4                   |
 
 ### SOC2 (selected)
 

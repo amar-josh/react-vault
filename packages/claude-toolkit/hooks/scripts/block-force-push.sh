@@ -15,8 +15,9 @@ if [[ "$COMMAND" =~ git[[:space:]]+push[[:space:]]+.*--force(-with-lease)?.*[[:s
     $COMMAND
 
 Force push to main / master / staging / production / release branches is
-blocked by bfsi-claude-toolkit. This protects audit trail integrity (RBI
-Annexure I §12, SOC2 CC7.2).
+blocked by bfsi-claude-toolkit. This protects audit trail integrity
+(RBI Annexure I §16 + §17 — Audit log maintenance + capture settings;
+SOC2 CC7.2). Full text: packages/claude-toolkit/references/rbi-annexure-i.md
 
 If the remote needs rewinding, do it manually via:
   - Git GUI with explicit confirmation
