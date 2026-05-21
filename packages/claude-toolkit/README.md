@@ -13,7 +13,7 @@ Built per the official [Claude Code spec](https://code.claude.com/docs/) — ski
 ```text
 toolkit/
 ├── plugin.json                  Plugin manifest (engines.claude-code >= 2.1.85)
-├── skills/                      16 skills (action + reference)
+├── skills/                      19 skills (action + reference)
 ├── agents/                      8 specialised agents
 ├── hooks/
 │   ├── hooks.json               17 hook entries across 9 event types
