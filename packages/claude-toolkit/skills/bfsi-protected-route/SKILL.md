@@ -99,4 +99,4 @@ If the project has a permissions catalog (`src/routes/permissions.ts` or `src/co
 
 - `src/routes/ProtectedRoute.tsx` — the project-local guard component (shipped in template).
 - `src/routes/permissions.ts` (if present) — central permission catalog.
-- RBI Annexure I §3 (Logical Access Control) — the regulatory backstop for this convention.
+- RBI Annexure I §8 (User Access Control / Management) — the regulatory backstop for this convention. Full text: [`../../references/rbi-annexure-i.md`](../../references/rbi-annexure-i.md). (Note: §3 in Annex I is _Environmental Controls_, not logical access.)

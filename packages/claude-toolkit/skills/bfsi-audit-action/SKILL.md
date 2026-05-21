@@ -8,7 +8,7 @@ allowed-tools: Read Edit Grep
 
 # BFSI Audit Action
 
-Wraps a state-changing action with an audit event. Audit logging is non-negotiable for BFSI state changes (RBI Annexure I §8, PCI-DSS req 10.2.x, SOC2 CC7.3).
+Wraps a state-changing action with an audit event. Audit logging is non-negotiable for BFSI state changes (RBI Annexure I §16 & §17 — Audit log maintenance + capture settings; PCI-DSS v4.0 §10.2.1.x; SOC2 CC7.3). Full quoted text in `packages/claude-toolkit/references/`.
 
 ## Arguments
 
@@ -115,5 +115,5 @@ If a test for this handler exists, ensure it asserts the audit event is emitted 
 ## References
 
 - `bfsi-feature/references/audit-events.md` — the project's audit-event taxonomy.
-- RBI Annexure I §8.x — Logging & monitoring; mandatory for state changes on customer data.
-- PCI-DSS req 10.2.x — Audit trails for access to cardholder data.
+- RBI Annexure I §16 (Maintenance / Monitoring / Analysis of Audit Logs) and §17 (Audit Log settings) — mandatory for state changes on customer data. See [`../../references/rbi-annexure-i.md`](../../references/rbi-annexure-i.md).
+- PCI-DSS v4.0 §10.2.1.x (was v3.2.1 §10.2.x) — Audit trails for access to cardholder data. See [`../../references/pci-dss-v4.0-frontend-relevant.md`](../../references/pci-dss-v4.0-frontend-relevant.md).

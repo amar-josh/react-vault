@@ -25,22 +25,22 @@ If there are no staged changes, ask the user to stage first.
 
 Use the most-specific applicable type. BFSI-extended set:
 
-| Type | When |
-|---|---|
-| `feat` | new feature/capability |
-| `fix` | bug fix |
-| `security` | security-related change (CSP, headers, auth tightening) |
-| `compliance` | regulatory/compliance change (RBI/PCI/IRDAI/SOC2 item) |
-| `audit` | audit log additions, observability changes |
-| `perf` | performance improvement |
-| `refactor` | code restructure, no behaviour change |
-| `docs` | docs only |
-| `style` | formatting only |
-| `test` | tests only |
-| `build` | build system, deps |
-| `ci` | CI configuration |
-| `chore` | maintenance |
-| `revert` | reverting prior commit |
+| Type         | When                                                    |
+| ------------ | ------------------------------------------------------- |
+| `feat`       | new feature/capability                                  |
+| `fix`        | bug fix                                                 |
+| `security`   | security-related change (CSP, headers, auth tightening) |
+| `compliance` | regulatory/compliance change (RBI/PCI/IRDAI/SOC2 item)  |
+| `audit`      | audit log additions, observability changes              |
+| `perf`       | performance improvement                                 |
+| `refactor`   | code restructure, no behaviour change                   |
+| `docs`       | docs only                                               |
+| `style`      | formatting only                                         |
+| `test`       | tests only                                              |
+| `build`      | build system, deps                                      |
+| `ci`         | CI configuration                                        |
+| `chore`      | maintenance                                             |
+| `revert`     | reverting prior commit                                  |
 
 `security` and `compliance` are BFSI-extensions. Use them whenever applicable so audit reviewers can grep `git log --grep="^security:"` or `git log --grep="^compliance:"` to find every relevant commit quickly.
 
@@ -59,7 +59,7 @@ The feature or area: `kyc`, `transactions`, `auth`, `audit`, `ui`, `core`, etc.
 
 - Wrap at ~72 chars
 - Focus on WHY not WHAT (diff already shows WHAT)
-- For `security` or `compliance` types, the body should reference the regulation/control (e.g. "addresses RBI Annexure I §6.2 — session timeout enforcement")
+- For `security` or `compliance` types, the body should reference the regulation/control using canonical numbering (e.g. "addresses RBI Annexure I §8 — User Access Control"; verifiable text in `packages/claude-toolkit/references/rbi-annexure-i.md`)
 - Reference issue / Jira ticket if applicable
 
 ### Step 6: Output
@@ -80,18 +80,20 @@ are audited as kyc.verification.submitted.
 ```
 security(auth): tighten session idle timeout to 5min on transaction routes
 
-Addresses RBI Annexure I §6.2 — sensitive transaction
-flows must auto-logout after ≤ 5min idle. Adds
-idleTimeout prop to <ProtectedRoute scope="transaction">.
+Addresses RBI Annexure I §6.4 (session management
+under ASLC) and §8 (User Access Control) — sensitive
+transaction flows must auto-logout after ≤ 5min idle.
+Adds idleTimeout prop to <ProtectedRoute scope="transaction">.
 Non-transaction routes remain at 15min.
 ```
 
 ```
 compliance(audit): emit data.pan.revealed events with reveal_duration
 
-PCI-DSS req 10.2.1 — log every access to cardholder
-data. Extends auditClient to record reveal_duration_ms
-so reveal events can be queried for anomaly detection.
+PCI-DSS v4.0 §10.2.1.1 (was v3.2.1 §10.2.1) — log every
+access to cardholder data. Extends auditClient to record
+reveal_duration_ms so reveal events can be queried for
+anomaly detection.
 ```
 
 ## Conventions reinforced
